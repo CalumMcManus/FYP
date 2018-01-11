@@ -7,17 +7,18 @@
 #include <Engine\Graphics\Mesh.h>
 #include <Engine\gameObject.h>
 #include <Component\modelRenderer.h>
+#include <Component\material.h>
 #include <Component\texture.h>
 #include <glm.hpp>
 #include <gtc\matrix_transform.hpp>
 
 #include <gtx\transform.hpp>
-#include <stb_image.h>
 #include <Engine\Graphics\SkyBox.h>
-
+#include <nanogui\nanogui.h>
 
 using namespace std;
 using namespace Engine;
+
 int main()
 {
 	Engine::graphics::Window *window = new Engine::graphics::Window("FPY Graphics Engine", 1270, 720);
@@ -60,7 +61,9 @@ int main()
 
 	//Testure Stuff
 	testObj.addComponent(new Texture("../Assets/Textures/test.tga"));
-	testObj.getComponent<Texture>()->bindTexture();
+	testObj.getComponent<Texture>()->bindTexture(defaultShader);
+	testObj.addComponent(new Material(defaultShader));
+	testObj.getComponent<Material>()->ReadShader();
 
 	Engine::graphics::SkyBox* sBox = new Engine::graphics::SkyBox("../Assets/Textures/Cubemap/", "");
 
@@ -82,6 +85,23 @@ int main()
 
 	vec3 camPos = glm::vec3(x, fYAxis, y);
 
+	
+	//Nanogui test
+
+	window->setBackground(nanogui::Color(0, 0, 0, 0));
+
+	nanogui::FormHelper *gui = new nanogui::FormHelper(window);
+	nanogui::ref<nanogui::Window> windowGUI = gui->addWindow(Eigen::Vector2i(10, 10), "Form helper example");
+	bool b = true;
+	string s = "Hello";
+	gui->addGroup("Basic types");
+	gui->addVariable("bool", b, true);
+	gui->addVariable("string", s);
+
+
+	window->setVisible(true);
+	window->performLayout();
+	windowGUI->center();
 	
 
 	while (!window->Closed())
@@ -112,19 +132,36 @@ int main()
 		);
 
 		window->Clear();
+		
+		//Skybox
+		glDisable(GL_BLEND);
 		sBox->Draw(P, V * glm::translate(camPos));
+
+		//Dagger
+		
 		defaultShader->enable();
+		
 		glm::mat4 M = glm::translate(glm::vec3(0, 0, 0));// *glm::rotate(rotationTest, glm::vec3(0, 1, 0));
 		defaultShader->setUniformMat4("M", M);
 		defaultShader->setUniformMat4("V", V);
 		MV = M * V;
 		
+
 		defaultShader->setUniformMat3("NormalMatrix", mat3(MV[0], MV[1], MV[2]));
+
+		//Call this before drawing 3D world
+		window->drawContents();
+		testObj.getComponent<Texture>()->bindTexture(defaultShader);
 		testObj.getComponent<ModelRenderer>()->getModel().render();
 
+		
+		
+		//Call this to drawUI
+		window->drawWidgets();
 		window->Update();
 
 
 	}
+	glfwTerminate();
 	return 0;
 }

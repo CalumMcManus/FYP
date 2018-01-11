@@ -1,11 +1,12 @@
 #pragma once
 
 #include <iostream>
-#include <GL/glew.h>
+#include <glad\glad.h>
 #include <GLFW\glfw3.h>
+#include <nanogui\nanogui.h>
 
 namespace Engine { namespace graphics {
-
+	using namespace nanogui;
 #define MAX_KEYS 1024
 #define MAX_BUTTONS 32
 	//! Window 
@@ -13,7 +14,7 @@ namespace Engine { namespace graphics {
 	This class deals with displaying the base window as well as getting callbacks from mouse and keyboard inputs
 	Contained in the Engine::graphics namespace.
 	*/
-	class Window
+	class Window : public Screen
 	{
 	private:
 		//! Private const char pointer.
@@ -39,6 +40,7 @@ namespace Engine { namespace graphics {
 		//! Private int variables
 		/*! Holds x and y position of the cursor */
 		double mx, my;
+
 	public:
 		//! Window Contructor
 		/*!
@@ -104,10 +106,15 @@ namespace Engine { namespace graphics {
 		*/
 		void getMousePosition(double& xPos, double& yPos) const;
 
+		GLFWwindow& getGLFWWindow() { return *m_Window; }
+
+		//Nanogui functions
+		void drawContents() override;
+
 	private:
 		//! The init member function
 		/*!
-		Sets up all the OpenGL backend and initilizes the GLFW and GLEW libraries while checking for errors.
+		Sets up all the OpenGL backend and initilizes the GLFW and GLAD libraries while checking for errors.
 		*/
 		bool init();
 		//! The key_callback static member function
@@ -125,6 +132,12 @@ namespace Engine { namespace graphics {
 		Tells GLFW to give infomation about mouse being moved and the cursors new position
 		*/
 		static friend void cursor_position_callback(GLFWwindow* window, double xPos, double yPos);
+
+		static friend void char_callback(GLFWwindow* window, unsigned int codepoint);
+
+		static friend void drop_callback(GLFWwindow* window, int count, const char **filenames);
+
+		static friend void scroll_backback(GLFWwindow* window, double x, double y);
 
 	};
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "component.h"
-#include <GL\glew.h>
+#include <Engine\Graphics\shader.h>
+#include <glad\glad.h>
 #include <stb_image.h>
 #include <iostream>
 namespace Engine {
@@ -11,6 +12,7 @@ namespace Engine {
 		public:
 			Texture(const char* filePath) 
 			{ 
+				glActiveTexture(GL_TEXTURE2);
 				glGenTextures(1, &m_TextureID);
 
 				int width, height, nrComponents;
@@ -45,7 +47,13 @@ namespace Engine {
 			void Update(float deltaTime) override {};
 			void Message(const char* message) override {};
 
-			void bindTexture() { glBindTexture(GL_TEXTURE_2D, m_TextureID); }
+			void bindTexture(graphics::Shader* shader) 
+			{ 	
+				GLint baseImageLoc = glGetUniformLocation(shader->getID(), "texture2D");
+				glUniform1i(baseImageLoc, 2);
+				glActiveTexture(GL_TEXTURE2);
+				glBindTexture(GL_TEXTURE_2D, m_TextureID); 
+			}
 			GLuint getTextureID() { return m_TextureID; }
 		private:
 			GLuint m_TextureID;

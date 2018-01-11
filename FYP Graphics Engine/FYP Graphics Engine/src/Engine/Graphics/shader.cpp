@@ -71,11 +71,11 @@ namespace Engine {
 			GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
 			GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
 
-			std::string vertSourceString = FileUtils::read_file(m_VertPath);
-			std::string fragSourceString = FileUtils::read_file(m_FragPath);
+			m_VertSourceString = FileUtils::read_file(m_VertPath);
+			m_FragSourceString = FileUtils::read_file(m_FragPath);
 
-			const char* vertSource = vertSourceString.c_str();
-			const char* fragSource = fragSourceString.c_str();
+			const char* vertSource = m_VertSourceString.c_str();
+			const char* fragSource = m_FragSourceString.c_str();
 
 			glShaderSource(vertex, 1, &vertSource, NULL);
 			glCompileShader(vertex);

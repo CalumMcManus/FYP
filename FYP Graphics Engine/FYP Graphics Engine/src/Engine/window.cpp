@@ -1,5 +1,4 @@
 #include <Engine\window.h>
-
 namespace Engine { namespace graphics {
 
 	void window_resize(GLFWwindow *window, int width, int height);
@@ -24,6 +23,10 @@ namespace Engine { namespace graphics {
 			m_MouseButtons[i] = false;
 		}
 
+		//Init nanogui
+		Screen();
+		initialize(m_Window, false);
+
 	}
 
 	Window::~Window()
@@ -37,6 +40,7 @@ namespace Engine { namespace graphics {
 		//Set Background clear colour of window
 		glClearColor(0.35f, 0.35f, 0.35f, 1);
 		//Clear bit buffers
+		glClear(GL_STENCIL_BUFFER_BIT);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
@@ -45,7 +49,7 @@ namespace Engine { namespace graphics {
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)
 		{
-			std::cout << "OpenGL Enum Error: " << error << " " << gluErrorString(error) << std::endl;
+			std::cout << "OpenGL Enum Error: " << error << " " << glad_glGetString(error) << std::endl;
 		}
 
 		glfwPollEvents();
@@ -84,6 +88,15 @@ namespace Engine { namespace graphics {
 		yPos = my;
 	}
 
+	void Window::drawContents()
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_ONE, GL_ZERO);
+		glEnable(GL_DEPTH_TEST);
+		glDepthMask(GL_TRUE);
+		glDepthFunc(GL_LEQUAL);
+	}
+
 	bool Window::init()
 	{
 		if (!glfwInit())
@@ -91,6 +104,8 @@ namespace Engine { namespace graphics {
 			std::cout << "Window.cpp: init: Failed to initialise GLFW" << std::endl;
 			return false;
 		}
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 		glfwWindowHint(GLFW_SAMPLES, 16);
 		m_Window = glfwCreateWindow(m_Width, m_Height, m_Title, NULL, NULL);
 		if (!m_Window)
@@ -106,12 +121,20 @@ namespace Engine { namespace graphics {
 		glfwSetKeyCallback(m_Window, key_callback);
 		glfwSetMouseButtonCallback(m_Window, mouse_button_callback);
 		glfwSetCursorPosCallback(m_Window, cursor_position_callback);
-		glEnable(GL_MULTISAMPLE);
-		if (glewInit() != GLEW_OK)
+		glfwSetCharCallback(m_Window, char_callback);
+		glfwSetDropCallback(m_Window, drop_callback);
+		glfwSetScrollCallback(m_Window, scroll_backback);
+
+		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		{
-			std::cout << "Window.cpp: init: Failed to initialise GLEW" << std::endl;
+			std::cout << "Failed to initialise GLAD" << std::endl;
 			return false;
 		}
+
+		glEnable(GL_MULTISAMPLE);
+		
+
+		
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthMask(GL_TRUE);
@@ -121,6 +144,8 @@ namespace Engine { namespace graphics {
 		glCullFace(GL_BACK);	// cull back face
 		glFrontFace(GL_CCW);	// GL_CCW for counter clock-wise
 
+		
+
 		std::cout << "Calum McManus's CMEngine" << std::endl;
 		std::cout << "Running OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 		return true;
@@ -128,25 +153,45 @@ namespace Engine { namespace graphics {
 
 	void window_resize(GLFWwindow *window, int width, int height)
 	{
+		Window* win = (Window*)glfwGetWindowUserPointer(window);
 		glViewport(0, 0, width, height);
+		win->resizeCallbackEvent(width, height);
 	}
 
 	void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		Window* win = (Window*)glfwGetWindowUserPointer(window);
 		win->m_Keys[key] = action != GLFW_RELEASE;
+		win->keyCallbackEvent(key, scancode, action, mods);
 	}
 
 	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 	{
 		Window* win = (Window*)glfwGetWindowUserPointer(window);
 		win->m_MouseButtons[button] = action != GLFW_RELEASE;
+		win->mouseButtonCallbackEvent(button, action, mods);
 	}
 	void cursor_position_callback(GLFWwindow* window, double xPos, double yPos) 
 	{
 		Window* win = (Window*)glfwGetWindowUserPointer(window);
 		win->mx = xPos;
 		win->my = yPos;
+		win->cursorPosCallbackEvent(xPos, yPos);
+	}
+	void char_callback(GLFWwindow * window, unsigned int codepoint)
+	{
+		Window* win = (Window*)glfwGetWindowUserPointer(window);
+		win->charCallbackEvent(codepoint);
+	}
+	void drop_callback(GLFWwindow * window, int count, const char ** filenames)
+	{
+		Window* win = (Window*)glfwGetWindowUserPointer(window);
+		win->dropCallbackEvent(count, filenames);
+	}
+	void scroll_backback(GLFWwindow * window, double x, double y)
+	{
+		Window* win = (Window*)glfwGetWindowUserPointer(window);
+		win->scrollCallbackEvent(x, y);
 	}
 }
 }

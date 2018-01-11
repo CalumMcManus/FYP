@@ -47,7 +47,9 @@ Engine::graphics::SkyBox::SkyBox(const char * texturePath, const char *shaderPat
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Indecies.size() * sizeof(GLuint), &m_Indecies[0], GL_STATIC_DRAW);
 	
+	glActiveTexture(GL_TEXTURE2);
 	glGenTextures(1, &m_Texture);
+	
 
 	GLuint sides[] =
 	{
@@ -63,7 +65,7 @@ Engine::graphics::SkyBox::SkyBox(const char * texturePath, const char *shaderPat
 	{
 		std::string TextureDir = m_cCubemapPath + std::to_string(i + 1) + ".bmp";
 		int width, height, nrComponents;
-		unsigned char* textureData = stbi_load(TextureDir.c_str(), &width, &height, &nrComponents, 0);
+		unsigned char* textureData = stbi_load(TextureDir.c_str(), &width, &height, &nrComponents, 3);
 		if (textureData)
 		{			
 			glBindTexture(GL_TEXTURE_CUBE_MAP, m_Texture);
@@ -92,6 +94,8 @@ Engine::graphics::SkyBox::SkyBox(const char * texturePath, const char *shaderPat
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+
 }
 
 Engine::graphics::SkyBox::~SkyBox()
@@ -105,18 +109,25 @@ void Engine::graphics::SkyBox::Draw(glm::mat4 proj, glm::mat4 viewRot) const
 	{
 		glDepthMask(0);
 		glCullFace(GL_FRONT);
+
+		GLint textureLocation = glGetUniformLocation(m_Shader->getID(), "cube_texture");
+
 		m_Shader->enable();
 
+		glUniform1i(textureLocation, 2);
+
+		glActiveTexture(GL_TEXTURE2);
 		m_Shader->setUniformMat4("V", viewRot);
 		m_Shader->setUniformMat4("P", proj);
 
 		m_VertexArray->bind();
+		
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_Texture);
 
 		glDrawElements(GL_TRIANGLES, m_Indecies.size(), GL_UNSIGNED_INT, 0);
 		//glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
 		m_VertexArray->unbind();
-		//m_Shader->disable();
+		m_Shader->disable();
 		glDepthMask(1);
 		glCullFace(GL_BACK);
 	}

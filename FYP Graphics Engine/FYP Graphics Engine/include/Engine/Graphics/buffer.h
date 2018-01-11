@@ -1,5 +1,5 @@
 #pragma once
-#include <GL\glew.h>
+#include <glad/glad.h>
 #include <glm.hpp>
 namespace Engine { namespace graphics {
 	

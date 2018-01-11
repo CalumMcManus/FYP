@@ -20,7 +20,7 @@ void Mesh::render()
 	//glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
 	m_VAO->unbind();
 
-	glActiveTexture(GL_TEXTURE0);
+	//glActiveTexture(GL_TEXTURE0);
 }
 
 void Mesh::setupMesh()

@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <iostream>
-#include <GL\glew.h>
+#include <glad/glad.h>
 #include <Util\fileutil.h>
 
 #include <glm.hpp>
@@ -22,6 +22,11 @@ namespace Engine {
 			//! Private const char pointer variables.
 			/*! Holds the paths to the vertex and fragment shaders */
 			const char *m_VertPath, *m_FragPath;
+
+			//! Holds the file strings
+			/*! Used for checking uniform stypes */
+			std::string m_VertSourceString;
+			std::string m_FragSourceString;
 		public:
 			//! Shader Contructor
 			/*!
@@ -62,6 +67,9 @@ namespace Engine {
 			Returns the ID value for referencing it
 			*/
 			const GLuint getID() const { return m_ShaderID; }
+
+			const std::string getVertString() const { return m_VertSourceString; }
+			const std::string getFragString() const { return m_FragSourceString; }
 		private:
 			//! The load member function
 			/*!
