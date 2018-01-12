@@ -16,8 +16,13 @@
 #include <Engine\Graphics\SkyBox.h>
 #include <nanogui\nanogui.h>
 
+#include <windows.h>
+
+
 using namespace std;
 using namespace Engine;
+
+
 
 int main()
 {
@@ -68,7 +73,10 @@ int main()
 	Engine::graphics::SkyBox* sBox = new Engine::graphics::SkyBox("../Assets/Textures/Cubemap/", "");
 
 
-
+	
+	/*path = Engine::FileUtils::BrowseFiles();
+	std::cout << path << std::endl;*/
+	
 	//Orbit Camera position with bounce
 	float theta = 0;
 	float step = 0.005f;
@@ -98,6 +106,13 @@ int main()
 	gui->addVariable("bool", b, true);
 	gui->addVariable("string", s);
 
+	gui->addButton("Create Project", []() 
+	{
+		std::string path = Engine::FileUtils::BrowseFolder();
+		std::cout << "Creating project directories at: " << path << std::endl;
+		Engine::FileUtils::CreateFolder(path, "Assets");
+	}
+	)->setTooltip("Create a new project at directory.");;
 
 	window->setVisible(true);
 	window->performLayout();
