@@ -11,12 +11,16 @@
 #include <Component\texture.h>
 #include <glm.hpp>
 #include <gtc\matrix_transform.hpp>
+#include <Engine\project.h>
 
 #include <gtx\transform.hpp>
 #include <Engine\Graphics\SkyBox.h>
 #include <nanogui\nanogui.h>
 
 #include <windows.h>
+
+
+#include <string>
 
 
 using namespace std;
@@ -26,7 +30,7 @@ using namespace Engine;
 
 int main()
 {
-	Engine::graphics::Window *window = new Engine::graphics::Window("FPY Graphics Engine", 1270, 720);
+	Engine::graphics::Window *window = new Engine::graphics::Window("FYP Graphics Engine", 1270, 720);
 
 	cout << Engine::FileUtils::FileSize("../Assets/Models/test.obj") << endl;
 
@@ -39,7 +43,8 @@ int main()
 	glm::mat4 M = glm::translate(glm::vec3(0, 0, 0));// *glm::rotate(0, glm::vec3(0, 0, 0)) * glm::scale(glm::vec3(1, 1, 1));
 	
 	GameObject testObj;
-	testObj.addComponent(new ModelRenderer("../Assets/Models/test.obj"));
+	testObj.addComponent(new ModelRenderer(Engine::FileUtils::BrowseFiles().c_str()));
+	//testObj.addComponent(new ModelRenderer("../Assets/Models/test.obj"));
 
 	float rotationTest = 0;
 
@@ -93,7 +98,7 @@ int main()
 
 	vec3 camPos = glm::vec3(x, fYAxis, y);
 
-	
+	Engine::Project *project = new Project();
 	//Nanogui test
 
 	window->setBackground(nanogui::Color(0, 0, 0, 0));
@@ -106,11 +111,11 @@ int main()
 	gui->addVariable("bool", b, true);
 	gui->addVariable("string", s);
 
-	gui->addButton("Create Project", []() 
+	gui->addButton("Create Project", [&]() 
 	{
 		std::string path = Engine::FileUtils::BrowseFolder();
 		std::cout << "Creating project directories at: " << path << std::endl;
-		Engine::FileUtils::CreateFolder(path, "Assets");
+		project->SetUpProjectDirectories();
 	}
 	)->setTooltip("Create a new project at directory.");;
 

@@ -6,7 +6,8 @@ namespace Engine { namespace Components {
 	class ModelRenderer : public Component
 	{
 	public:
-		ModelRenderer(const char* meshPath) { m_Model = new graphics::Model(meshPath); };
+		ModelRenderer(const char* meshPath) 
+		{ m_Model = new graphics::Model(meshPath); };
 		void Update(float deltaTime) override {};
 		void Message(const char* message) override {};
 

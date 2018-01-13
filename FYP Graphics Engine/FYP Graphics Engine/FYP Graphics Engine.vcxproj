@@ -31,6 +31,7 @@
     <ClInclude Include="include\Engine\Graphics\shader.h" />
     <ClInclude Include="include\Engine\Graphics\SkyBox.h" />
     <ClInclude Include="include\Engine\Graphics\vertexArray.h" />
+    <ClInclude Include="include\Engine\project.h" />
     <ClInclude Include="include\Engine\window.h" />
     <ClInclude Include="include\stb_image.h" />
     <ClInclude Include="include\Util\fileutil.h" />
@@ -42,6 +43,7 @@
     <ClCompile Include="src\Engine\Graphics\shader.cpp" />
     <ClCompile Include="src\Engine\Graphics\SkyBox.cpp" />
     <ClCompile Include="src\Engine\Graphics\vertexArray.cpp" />
+    <ClCompile Include="src\Engine\project.cpp" />
     <ClCompile Include="src\Engine\window.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
@@ -161,7 +163,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;MY_PROJECTDIR=$(Projectdir);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

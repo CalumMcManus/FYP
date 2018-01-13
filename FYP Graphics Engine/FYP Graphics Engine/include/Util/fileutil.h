@@ -6,7 +6,6 @@
 #include <windows.h>
 #include <shlobj.h>
 
-
 namespace Engine {
 	class FileUtils
 	{
@@ -55,11 +54,15 @@ namespace Engine {
 			char buffer[BUFSIZE] = { 0 };
 			OPENFILENAME ofns = { 0 };
 			ofns.lStructSize = sizeof(ofns);
+			//ofns.lpstrFilter = "OBJ Files (*.obj)\0*.obj\0";
 			ofns.lpstrFile = buffer;
 			ofns.nMaxFile = BUFSIZE;
 			ofns.lpstrTitle = "Select File";
+			ofns.Flags = OFN_NOCHANGEDIR;
 			GetOpenFileName(&ofns);
-			return buffer;
+			std::string pathValue(buffer);
+			
+			return pathValue;
 		}
 
 		//Opens windows file explorer to browse folders

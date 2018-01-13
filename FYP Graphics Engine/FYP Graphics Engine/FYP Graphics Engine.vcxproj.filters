@@ -81,6 +81,9 @@
     <ClInclude Include="include\Engine\Graphics\SkyBox.h">
       <Filter>Header Files\Engine\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="include\Engine\project.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\window.cpp">
@@ -112,6 +115,9 @@
     </ClCompile>
     <ClCompile Include="src\glad.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\project.cpp">
+      <Filter>Source Files\Engine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
