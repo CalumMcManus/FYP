@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm.hpp>
+#include <gtx\transform.hpp>
 #include "component.h"
 
 namespace Engine { namespace Components {
@@ -48,6 +49,8 @@ namespace Engine { namespace Components {
 		inline const void Rotate(glm::vec3 amount) { p_EularRotation += amount; }
 		inline const void Translate(glm::vec3 amount) { p_Position += amount; }
 		inline const void Scale(glm::vec3 amount) { p_Scale += amount; }
+
+		inline const glm::mat4 getMatrix() { return  glm::translate(p_Position) * glm::rotate(1.0f, p_EularRotation) * glm::scale(p_Scale); }
 	};
 } 
 }

@@ -1,5 +1,24 @@
 #include <Engine\project.h>
 
+Engine::Project::Project(GLFWEngine* enginePointer)
+{
+	m_Scene = new Scene();
+	m_EnginePointer = enginePointer;
+	gui = new nanogui::FormHelper(enginePointer->m_Window);
+	windowGUI = gui->addWindow(Eigen::Vector2i(10, 10), "NanoGUI Test");
+
+	gui->addVariable("Camera Orbit", m_bOrbit, true);
+	gui->addButton("Add Model", [&]()
+	{
+		AddModel();
+	}
+	)->setTooltip("Create a new project at directory.");
+
+	enginePointer->m_Window->setVisible(true);
+	enginePointer->m_Window->performLayout();
+	windowGUI->center();
+}
+
 bool Engine::Project::SetUpProjectDirectories()
 {
 	m_Directory = std::string(FileUtils::BrowseFolder());
@@ -22,6 +41,20 @@ bool Engine::Project::SetUpProjectDirectories()
 
 
 	return false;
+}
+
+void Engine::Project::AddModel()
+{
+	GameObject* tempObj = new GameObject();
+	tempObj->addComponent(new ModelRenderer(FileUtils::BrowseFiles().c_str()));
+	tempObj->addComponent(new Texture(FileUtils::BrowseFiles().c_str()));
+	m_Scene->AddObject(tempObj);
+}
+
+void Engine::Project::Update()
+{
+	m_Scene->Update(m_bOrbit);
+	m_Scene->Render();
 }
 
 bool Engine::Project::CreateConfigFile(std::string path)
