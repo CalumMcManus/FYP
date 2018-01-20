@@ -34,6 +34,12 @@
     <Filter Include="Resource Files\Shaders">
       <UniqueIdentifier>{12e84a7a-8e8a-46d8-954a-32ab391976c1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Engine\Physics">
+      <UniqueIdentifier>{b0c200a8-8f01-49d8-92a0-214ebfc307bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\Physics">
+      <UniqueIdentifier>{1ed12d17-9f2c-41a5-8cb0-7aeaec87922b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Engine\window.h">
@@ -90,6 +96,9 @@
     <ClInclude Include="include\Engine\Engine.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="include\Engine\Physics\RayCast.h">
+      <Filter>Header Files\Engine\Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\window.cpp">
@@ -130,6 +139,9 @@
     </ClCompile>
     <ClCompile Include="src\Engine\Scene.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Physics\RayCast.cpp">
+      <Filter>Source Files\Engine\Physics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

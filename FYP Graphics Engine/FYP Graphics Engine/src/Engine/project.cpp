@@ -2,7 +2,7 @@
 
 Engine::Project::Project(GLFWEngine* enginePointer)
 {
-	m_Scene = new Scene();
+	m_Scene = new Scene(enginePointer);
 	m_EnginePointer = enginePointer;
 	gui = new nanogui::FormHelper(enginePointer->m_Window);
 	windowGUI = gui->addWindow(Eigen::Vector2i(10, 10), "NanoGUI Test");
@@ -13,7 +13,6 @@ Engine::Project::Project(GLFWEngine* enginePointer)
 		AddModel();
 	}
 	)->setTooltip("Create a new project at directory.");
-
 	enginePointer->m_Window->setVisible(true);
 	enginePointer->m_Window->performLayout();
 	windowGUI->center();

@@ -32,6 +32,7 @@
     <ClInclude Include="include\Engine\Graphics\shader.h" />
     <ClInclude Include="include\Engine\Graphics\SkyBox.h" />
     <ClInclude Include="include\Engine\Graphics\vertexArray.h" />
+    <ClInclude Include="include\Engine\Physics\RayCast.h" />
     <ClInclude Include="include\Engine\project.h" />
     <ClInclude Include="include\Engine\Scene.h" />
     <ClInclude Include="include\Engine\window.h" />
@@ -46,6 +47,7 @@
     <ClCompile Include="src\Engine\Graphics\shader.cpp" />
     <ClCompile Include="src\Engine\Graphics\SkyBox.cpp" />
     <ClCompile Include="src\Engine\Graphics\vertexArray.cpp" />
+    <ClCompile Include="src\Engine\Physics\RayCast.cpp" />
     <ClCompile Include="src\Engine\project.cpp" />
     <ClCompile Include="src\Engine\Scene.cpp" />
     <ClCompile Include="src\Engine\window.cpp" />

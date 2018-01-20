@@ -1,4 +1,5 @@
 #pragma once
+#include <Engine\Engine.h>
 #include "gameObject.h"
 #include <Component\modelRenderer.h>
 #include <Component\texture.h>
@@ -15,7 +16,7 @@ namespace Engine
 	class Scene
 	{
 	public:
-		Scene();
+		Scene(GLFWEngine* enginePointer);
 		~Scene();
 
 		void Update(bool orbit);
@@ -32,6 +33,8 @@ namespace Engine
 		glm::mat4 P = glm::perspective(1.16937f, (float)1280 / (float)720, 0.1f, 150.f);//1.16937 = 67 degrees
 		glm::mat4 V = glm::lookAt(glm::vec3(0, 7, -20), glm::vec3(0, 7, 0), glm::vec3(0, 1, 0));
 
+		GLFWEngine* m_EnginePointer;
+
 		//TODO:: In Camera class create orbit functionality
 		//Orbit Camera position with bounce
 		float theta = 0;
@@ -45,6 +48,11 @@ namespace Engine
 		bool yAxis = true;
 		float fYAxis = 0;
 		glm::vec3 camPos = glm::vec3(0, 6, -15);
+
+		//NanoGUI
+		nanogui::FormHelper *gui;
+		nanogui::ref<nanogui::Window> windowGUI;
+		nanogui::Color m_SceneAmbient = nanogui::Color(1, 1, 1, 1);
 
 	};
 }
