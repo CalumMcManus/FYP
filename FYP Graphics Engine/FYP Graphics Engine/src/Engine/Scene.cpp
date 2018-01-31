@@ -265,9 +265,10 @@ void Engine::Scene::Render()
 			if (selected)break;
 		}
 	}
-
+	m_FrameBuffer->Bind();
+	m_EnginePointer->m_Window->Clear();
 	m_SkyBox->Draw(P, V * glm::translate(camPos));
-
+	
 	m_DefaultShader->enable();
 	m_DefaultShader->setUniformMat4("P", P);
 	m_DefaultShader->setUniformMat4("V", V );
@@ -277,7 +278,7 @@ void Engine::Scene::Render()
 	//m_DefaultShader->setUniform3f("ray_dir", test);
 	m_DefaultShader->setUniform3f("cam_pos", camPos);
 
-	m_FrameBuffer->Bind();
+	
 	for (int i = 0; i < v_Objects.size(); i++)
 	{
 		//TODO:: Texture and other map handling needs to be moved into material
@@ -293,6 +294,7 @@ void Engine::Scene::Render()
 		if (tempModel)
 			tempModel->getModel().render();
 	}
+	//m_EnginePointer->m_Window->Clear();
 	m_FrameBuffer->Render();
 }
 

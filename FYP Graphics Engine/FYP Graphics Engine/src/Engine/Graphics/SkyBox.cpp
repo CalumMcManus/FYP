@@ -130,5 +130,6 @@ void Engine::graphics::SkyBox::Draw(glm::mat4 proj, glm::mat4 viewRot) const
 		m_Shader->disable();
 		glDepthMask(1);
 		glCullFace(GL_BACK);
+		glActiveTexture(GL_TEXTURE0);
 	}
 }

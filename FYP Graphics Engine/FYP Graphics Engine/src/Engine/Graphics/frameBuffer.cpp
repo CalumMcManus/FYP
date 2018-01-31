@@ -36,7 +36,7 @@ Engine::graphics::FrameBuffer::FrameBuffer(Window * window)
 	glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Why doe" << std::endl;
+		std::cout << "Frame Buffer: Contructor: Issue completing frame buffer" << std::endl;
 
 
 	//Set Up Shader
@@ -70,8 +70,8 @@ void Engine::graphics::FrameBuffer::Bind()
 
 void Engine::graphics::FrameBuffer::Unbind()
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBuffer);
-	glClearBufferfv(m_FrameBuffer,m_TexColorBuffer, 0);
+	//glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBuffer);
+	//glClearBufferuiv(GL_FRAMEBUFFER ,m_TexColorBuffer, &m_FrameBuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -88,6 +88,7 @@ void Engine::graphics::FrameBuffer::Render()
 	glBindTexture(GL_TEXTURE_2D, m_TexColorBuffer);
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+
 
 	
 
