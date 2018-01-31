@@ -99,6 +99,9 @@
     <ClInclude Include="include\Engine\Physics\RayCast.h">
       <Filter>Header Files\Engine\Physics</Filter>
     </ClInclude>
+    <ClInclude Include="include\Engine\Graphics\frameBuffer.h">
+      <Filter>Header Files\Engine\Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\window.cpp">
@@ -142,6 +145,9 @@
     </ClCompile>
     <ClCompile Include="src\Engine\Physics\RayCast.cpp">
       <Filter>Source Files\Engine\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Graphics\frameBuffer.cpp">
+      <Filter>Source Files\Engine\Graphics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

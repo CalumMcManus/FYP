@@ -6,6 +6,7 @@
 #include <Component\transform.h>
 #include <Engine\Graphics\shader.h>
 #include "Graphics\SkyBox.h"
+#include <Engine\Graphics\frameBuffer.h>
 
 #include <glm.hpp>
 #include <gtc\matrix_transform.hpp>
@@ -35,6 +36,8 @@ namespace Engine
 
 		GLFWEngine* m_EnginePointer;
 
+		graphics::FrameBuffer* m_FrameBuffer;
+
 		//TODO:: In Camera class create orbit functionality
 		//Orbit Camera position with bounce
 		float theta = 0;
@@ -52,7 +55,25 @@ namespace Engine
 		//NanoGUI
 		nanogui::FormHelper *gui;
 		nanogui::ref<nanogui::Window> windowGUI;
+
 		nanogui::Color m_SceneAmbient = nanogui::Color(1, 1, 1, 1);
+		float m_fAmbientInten = 0;
+
+		//Window Test
+		nanogui::Window* m_SceneLighting;
+		nanogui::Window* m_TransformWindow;
+		Transform* selectedTransform;
+		float testvalue;
+
+		nanogui::FloatBox<float> *posX;
+		nanogui::FloatBox<float> *posY;
+		nanogui::FloatBox<float> *posZ;
+		nanogui::FloatBox<float> *rotX;
+		nanogui::FloatBox<float> *rotY;
+		nanogui::FloatBox<float> *rotZ;
+		nanogui::FloatBox<float> *scaleX;
+		nanogui::FloatBox<float> *scaleY;
+		nanogui::FloatBox<float> *scaleZ;
 
 	};
 }

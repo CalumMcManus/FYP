@@ -17,8 +17,8 @@ out vec3 rayDir;
 void main () {
 
 	
-	cameraPos = vec3(V * M * vec4(cam_pos,1.0)); 
-	rayDir = vec3(M * vec4(cameraPos + ray_dir,1.0));
+	cameraPos = vec3(V * vec4(cam_pos,1.0)); 
+	rayDir = mat3(V)*ray_dir;
 	gl_Position = P * V * M * vec4(vertex_position, 1);
 	position = V * M * vec4(vertex_position, 1.0);
 	uv = VertexUV;

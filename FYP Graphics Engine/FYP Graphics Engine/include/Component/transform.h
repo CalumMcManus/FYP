@@ -1,7 +1,10 @@
 #pragma once
 
 #include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
 #include <gtx\transform.hpp>
+#include <gtc/type_ptr.hpp>
+#include <mat4x4.hpp>
 #include "component.h"
 
 namespace Engine { namespace Components {
@@ -50,7 +53,7 @@ namespace Engine { namespace Components {
 		inline const void Translate(glm::vec3 amount) { p_Position += amount; }
 		inline const void Scale(glm::vec3 amount) { p_Scale += amount; }
 
-		inline const glm::mat4 getMatrix() { return  glm::translate(p_Position) * glm::rotate(1.0f, p_EularRotation) * glm::scale(p_Scale); }
+		inline const glm::mat4 getMatrix() { return  glm::translate(p_Position) * glm::mat4_cast(glm::quat(glm::radians(p_EularRotation))) * glm::scale(p_Scale); }
 	};
 } 
 }

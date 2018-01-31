@@ -47,6 +47,7 @@ void Engine::Project::AddModel()
 	GameObject* tempObj = new GameObject();
 	tempObj->addComponent(new ModelRenderer(FileUtils::BrowseFiles().c_str()));
 	tempObj->addComponent(new Texture(FileUtils::BrowseFiles().c_str()));
+	tempObj->addComponent(new Transform(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
 	m_Scene->AddObject(tempObj);
 }
 
