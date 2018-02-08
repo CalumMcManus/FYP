@@ -2,17 +2,17 @@
 #include <glad\glad.h>
 #include <Engine\window.h>
 #include <Engine\Graphics\shader.h>
-
+#include <iostream>
 namespace Engine { namespace graphics {
 
 	class FrameBuffer
 	{
 	public:
-		FrameBuffer(Window* window);
+		FrameBuffer(Window* window, int samples);
 		void Bind();
 		void Unbind();
 		void Render();
-
+		GLuint GetBufferID() { return m_FrameBuffer; };
 	private:
 		GLuint m_QuadVAO;
 		GLuint m_QuadVBO;
@@ -29,7 +29,10 @@ namespace Engine { namespace graphics {
 
 		GLuint m_FrameBuffer;
 		GLuint m_TexColorBuffer;
-		GLuint m_RBODepthStencil;
+		GLuint m_RBODepthBuffer;
+		GLuint m_Texture;
+
+		int m_Samples;
 
 		Shader* m_ScreenShader;
 

@@ -8,8 +8,9 @@ Engine::Scene::Scene(GLFWEngine* enginePointer)
 		glm::vec3(0, 5, 0),
 		glm::vec3(0, 1, 0)
 	);
-
-	m_FrameBuffer = new graphics::FrameBuffer(enginePointer->m_Window);
+	m_TransformWindow = new UI::TransformWindow(enginePointer);
+	m_AABuffer = new graphics::FrameBuffer(enginePointer->m_Window, 4);
+	m_FrameBuffer = new graphics::FrameBuffer(enginePointer->m_Window, 1);
 
 	gui = new nanogui::FormHelper(enginePointer->m_Window);
 	windowGUI = gui->addWindow(Eigen::Vector2i(10, 10), "Lighting");
@@ -57,124 +58,8 @@ Engine::Scene::Scene(GLFWEngine* enginePointer)
 	textBox->setFixedSize(Eigen::Vector2i(60, 25));
 	textBox->setFontSize(20);
 	textBox->setAlignment(nanogui::TextBox::Alignment::Right);
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//Transform Window
-	m_TransformWindow = new nanogui::Window(enginePointer->m_Window, "Transform");
-	m_TransformWindow->setPosition(Eigen::Vector2i(15, 55));
-	m_TransformWindow->setLayout(new nanogui::GroupLayout());
 
-	//Position
-	m_TransformWindow->add<nanogui::Label>("Position", "sans-bold", 15);
-	nanogui::Widget *pos = new nanogui::Widget(m_TransformWindow);
-	pos->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
-		nanogui::Alignment::Maximum, 0, 10));
-	pos->setSize(nanogui::Vector2i(100, 20));
-	pos->add<nanogui::Label>("X", "sans-bold", 15);
-	posX = new nanogui::FloatBox<float>(pos, 0);
-	posX->setCallback([&](float value) {
-		if (selectedTransform != nullptr)
-		{
-			selectedTransform->setPosition(glm::vec3(value, selectedTransform->getPosition().y, selectedTransform->getPosition().z));
-			std::cout << selectedTransform->getPosition().x << " " << selectedTransform->getPosition().y << " " << selectedTransform->getPosition().z << std::endl;
-		}
-	});
-	posX->setEditable(true);
-	pos->add<nanogui::Label>("Y", "sans-bold", 15);
-	posY = new nanogui::FloatBox<float>(pos, 0);
-	posY->setCallback([&](float value) {
-		if (selectedTransform != nullptr)
-		{
-			selectedTransform->setPosition(glm::vec3(selectedTransform->getPosition().x, value, selectedTransform->getPosition().z));
-			std::cout << selectedTransform->getPosition().x << " " << selectedTransform->getPosition().y << " " << selectedTransform->getPosition().z << std::endl;
-		}
-	});
-	posY->setEditable(true);
-	pos->add<nanogui::Label>("Z", "sans-bold", 15);
-	posZ = new nanogui::FloatBox<float>(pos, 0);
-	posZ->setCallback([&](float value) {
-		if (selectedTransform != nullptr)
-		{
-			selectedTransform->setPosition(glm::vec3(selectedTransform->getPosition().x, selectedTransform->getPosition().y, value));
-			std::cout << selectedTransform->getPosition().x << " " << selectedTransform->getPosition().y << " " << selectedTransform->getPosition().z << std::endl;
-		}
-	});
-	posZ->setEditable(true);
-
-	//Rotation
-	m_TransformWindow->add<nanogui::Label>("Rotation", "sans-bold", 15);
-	nanogui::Widget *rot = new nanogui::Widget(m_TransformWindow);
-	rot->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
-		nanogui::Alignment::Maximum, 0, 10));
-	rot->setSize(nanogui::Vector2i(100, 20));
-	rot->add<nanogui::Label>("X", "sans-bold", 15);
-	rotX = new nanogui::FloatBox<float>(rot, 0);
-	rotX->setCallback([&](float value) {
-		if (selectedTransform != nullptr)
-		{
-			selectedTransform->setRotation(glm::vec3(value, selectedTransform->getRotation().y, selectedTransform->getRotation().z));
-			std::cout << selectedTransform->getRotation().x << " " << selectedTransform->getRotation().y << " " << selectedTransform->getRotation().z << std::endl;
-		}
-	});
-	rotX->setEditable(true);
-	rot->add<nanogui::Label>("Y", "sans-bold", 15);
-	rotY = new nanogui::FloatBox<float>(rot, 0);
-	rotY->setCallback([&](float value) {
-		if (selectedTransform != nullptr)
-		{
-			selectedTransform->setRotation(glm::vec3(selectedTransform->getRotation().x, value, selectedTransform->getRotation().z));
-			std::cout << selectedTransform->getRotation().x << " " << selectedTransform->getRotation().y << " " << selectedTransform->getRotation().z << std::endl;
-		}
-	});
-	rotY->setEditable(true);
-	rot->add<nanogui::Label>("Z", "sans-bold", 15);
-	rotZ = new nanogui::FloatBox<float>(rot, 0);
-	rotZ->setCallback([&](float value) {
-		if (selectedTransform != nullptr)
-		{
-			selectedTransform->setRotation(glm::vec3(selectedTransform->getRotation().x, selectedTransform->getRotation().y, value));
-			std::cout << selectedTransform->getRotation().x << " " << selectedTransform->getRotation().y << " " << selectedTransform->getRotation().z << std::endl;
-		}
-	});
-	rotZ->setEditable(true);
-
-	//Scale
-	m_TransformWindow->add<nanogui::Label>("Scale", "sans-bold", 15);
-	nanogui::Widget *scale = new nanogui::Widget(m_TransformWindow);
-	scale->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
-		nanogui::Alignment::Maximum, 0, 10));
-	scale->setSize(nanogui::Vector2i(100, 20));
-	scale->add<nanogui::Label>("X", "sans-bold", 15);
-	scaleX = new nanogui::FloatBox<float>(scale, 0.f);
-	scaleX->setCallback([&](float value) {
-		if (selectedTransform != nullptr)
-		{
-			selectedTransform->setSize(glm::vec3(value, selectedTransform->getSize().y, selectedTransform->getSize().z));
-			std::cout << selectedTransform->getSize().x << " " << selectedTransform->getSize().y << " " << selectedTransform->getSize().z << std::endl;
-		}
-	});
-	scaleX->setEditable(true);
-	scale->add<nanogui::Label>("Y", "sans-bold", 15);
-	scaleY = new nanogui::FloatBox<float>(scale, 0.f);
-	scaleY->setCallback([&](float value) {
-		if (selectedTransform != nullptr)
-		{
-			selectedTransform->setSize(glm::vec3(selectedTransform->getSize().x, value, selectedTransform->getSize().z));
-			std::cout << selectedTransform->getSize().x << " " << selectedTransform->getSize().y << " " << selectedTransform->getSize().z << std::endl;
-		}
-	});
-	scaleY->setEditable(true);
-	scale->add<nanogui::Label>("Z", "sans-bold", 15);
-	scaleZ = new nanogui::FloatBox<float>(scale, 0.f);
-	scaleZ->setCallback([&](float value) {
-		if (selectedTransform != nullptr)
-		{
-			selectedTransform->setSize(glm::vec3(selectedTransform->getSize().x, selectedTransform->getSize().y, value));
-			std::cout << selectedTransform->getSize().x << " " << selectedTransform->getSize().y << " " << selectedTransform->getSize().z << std::endl;
-		}
-	});
-	scaleZ->setEditable(true);
-
-
+	
 }
 
 Engine::Scene::~Scene()
@@ -244,18 +129,7 @@ void Engine::Scene::Render()
 					if (mag < 5)
 					{
 						std::cout << "Selected!" << std::endl;
-						selectedTransform = transform;
-						posX->setValue(transform->getPosition().x);
-						posY->setValue(transform->getPosition().y);
-						posZ->setValue(transform->getPosition().z);
-
-						rotX->setValue(transform->getRotation().x);
-						rotY->setValue(transform->getRotation().y);
-						rotZ->setValue(transform->getRotation().z);
-
-						scaleX->setValue(transform->getSize().x);
-						scaleY->setValue(transform->getSize().y);
-						scaleZ->setValue(transform->getSize().z);
+						m_TransformWindow->SelectTransform(transform);
 						selected = true;
 						break;
 					}
@@ -265,7 +139,7 @@ void Engine::Scene::Render()
 			if (selected)break;
 		}
 	}
-	m_FrameBuffer->Bind();
+	m_AABuffer->Bind();
 	m_EnginePointer->m_Window->Clear();
 	m_SkyBox->Draw(P, V * glm::translate(camPos));
 	
@@ -294,8 +168,19 @@ void Engine::Scene::Render()
 		if (tempModel)
 			tempModel->getModel().render();
 	}
-	//m_EnginePointer->m_Window->Clear();
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_AABuffer->GetBufferID()); // src FBO (multi-sample)
+	glReadBuffer(GL_COLOR_ATTACHMENT0);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FrameBuffer->GetBufferID());     // dst FBO (single-sample)
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+	glBlitFramebuffer(0, 0, 1280, 720,             // src rect
+		0, 0, 1280, 720,             // dst rect
+		GL_COLOR_BUFFER_BIT,             // buffer mask
+		GL_LINEAR);                      // scale filter
+
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	m_FrameBuffer->Render();
+	
 }
 
 void Engine::Scene::AddObject(GameObject * obj)

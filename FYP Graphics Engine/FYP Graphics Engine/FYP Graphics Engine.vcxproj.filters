@@ -40,6 +40,12 @@
     <Filter Include="Source Files\Engine\Physics">
       <UniqueIdentifier>{1ed12d17-9f2c-41a5-8cb0-7aeaec87922b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Engine\UI">
+      <UniqueIdentifier>{af32bc17-660e-4ee0-904a-e00b80ba51aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine\UI">
+      <UniqueIdentifier>{53af7ad2-6e30-40ac-87a4-de0e68d330c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Engine\window.h">
@@ -102,6 +108,9 @@
     <ClInclude Include="include\Engine\Graphics\frameBuffer.h">
       <Filter>Header Files\Engine\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="include\Engine\UI\TransformWindow.h">
+      <Filter>Header Files\Engine\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\window.cpp">
@@ -148,6 +157,9 @@
     </ClCompile>
     <ClCompile Include="src\Engine\Graphics\frameBuffer.cpp">
       <Filter>Source Files\Engine\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\UI\TransformWindow.cpp">
+      <Filter>Source Files\Engine\UI</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

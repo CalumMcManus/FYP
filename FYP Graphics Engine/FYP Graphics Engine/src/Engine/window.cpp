@@ -134,9 +134,7 @@ namespace Engine { namespace graphics {
 		glEnable(GL_MULTISAMPLE);
 		
 
-		
-
-		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_MULTISAMPLE);
 		glDepthMask(GL_TRUE);
 		glDepthFunc(GL_LEQUAL);
 
