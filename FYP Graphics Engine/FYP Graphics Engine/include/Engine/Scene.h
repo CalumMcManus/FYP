@@ -38,6 +38,7 @@ namespace Engine
 		GLFWEngine* m_EnginePointer;
 
 		graphics::FrameBuffer* m_FrameBuffer;
+		graphics::FrameBuffer* m_BlurBuffer;
 		graphics::FrameBuffer* m_AABuffer;
 
 

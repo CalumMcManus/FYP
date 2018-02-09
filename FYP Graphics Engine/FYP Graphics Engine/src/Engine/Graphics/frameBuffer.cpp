@@ -1,6 +1,6 @@
 #include <Engine\Graphics\frameBuffer.h>
 
-Engine::graphics::FrameBuffer::FrameBuffer(Window * window, int samples)
+Engine::graphics::FrameBuffer::FrameBuffer(Window * window, int samples, Shader* shader)
 {
 	m_Samples = samples;
 	//Set up FBO
@@ -70,7 +70,7 @@ Engine::graphics::FrameBuffer::FrameBuffer(Window * window, int samples)
 
 
 	//Set Up Shader
-	m_ScreenShader = new Shader("../Assets/Shaders/Bloom.vert", "../Assets/Shaders/Bloom.frag");
+	m_ScreenShader = shader;
 
 	//Setup Quad VAO
 	

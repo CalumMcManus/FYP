@@ -8,7 +8,7 @@ namespace Engine { namespace graphics {
 	class FrameBuffer
 	{
 	public:
-		FrameBuffer(Window* window, int samples);
+		FrameBuffer(Window* window, int samples, Shader* shader);
 		void Bind();
 		void Unbind();
 		void Render();

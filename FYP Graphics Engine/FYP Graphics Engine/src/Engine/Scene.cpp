@@ -9,8 +9,10 @@ Engine::Scene::Scene(GLFWEngine* enginePointer)
 		glm::vec3(0, 1, 0)
 	);
 	m_TransformWindow = new UI::TransformWindow(enginePointer);
-	m_AABuffer = new graphics::FrameBuffer(enginePointer->m_Window, 4);
-	m_FrameBuffer = new graphics::FrameBuffer(enginePointer->m_Window, 1);
+	m_AABuffer = new graphics::FrameBuffer(enginePointer->m_Window, 4, new graphics::Shader("../Assets/Shaders/Bloom.vert", "../Assets/Shaders/Bloom.frag"));
+	m_FrameBuffer = new graphics::FrameBuffer(enginePointer->m_Window, 1, new graphics::Shader("../Assets/Shaders/Bloom.vert", "../Assets/Shaders/Bloom.frag"));
+	m_BlurBuffer = new graphics::FrameBuffer(enginePointer->m_Window, 1, new graphics::Shader("../Assets/Shaders/Bloom2.vert", "../Assets/Shaders/Bloom2.frag"));
+
 
 	gui = new nanogui::FormHelper(enginePointer->m_Window);
 	windowGUI = gui->addWindow(Eigen::Vector2i(10, 10), "Lighting");
@@ -177,9 +179,14 @@ void Engine::Scene::Render()
 		0, 0, 1280, 720,             // dst rect
 		GL_COLOR_BUFFER_BIT,             // buffer mask
 		GL_LINEAR);                      // scale filter
-
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_BlurBuffer->Bind();
+	m_EnginePointer->m_Window->Clear();
 	m_FrameBuffer->Render();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_BlurBuffer->Render();
 	
 }
 
