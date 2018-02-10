@@ -6,7 +6,7 @@ Engine::graphics::FrameBuffer::FrameBuffer(Window * window, int samples, Shader*
 	//Set up FBO
 	glGenFramebuffers(1, &m_FrameBuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBuffer);
-	glActiveTexture(GL_TEXTURE2);
+	//glActiveTexture(GL_TEXTURE2);
 	glGenTextures(1, &m_Texture);
 	if (samples > 1)
 	{
@@ -105,7 +105,7 @@ void Engine::graphics::FrameBuffer::Unbind()
 
 void Engine::graphics::FrameBuffer::Render()
 {
-	Unbind();
+	//Unbind();
 	glBindVertexArray(m_QuadVAO);
 	glDisable(GL_DEPTH_TEST);
 	m_ScreenShader->enable();

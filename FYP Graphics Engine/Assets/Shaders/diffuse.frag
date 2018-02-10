@@ -28,5 +28,5 @@ void main () {
 	float intensity = (1.0 / length(position.xyz - light_pos))+0.25;
 	intensity = clamp(intensity, 0, 1);
 	vec4 ambient = vec4(light_ambient, 1);
-	fragment_colour = ((vec4(texture(texture2D, uv).rgb, 1.0) * intensity) * ambient)+test;
+	fragment_colour = ((vec4(texture(texture2D, uv).rgb, 1.0)) * (ambient*1.1))+test;
 }

@@ -7,6 +7,7 @@
 #include <Engine\Graphics\shader.h>
 #include "Graphics\SkyBox.h"
 #include <Engine\Graphics\frameBuffer.h>
+#include <Engine\Graphics\combineFilter.h>
 #include <Engine\UI\TransformWindow.h>
 
 #include <glm.hpp>
@@ -38,8 +39,12 @@ namespace Engine
 		GLFWEngine* m_EnginePointer;
 
 		graphics::FrameBuffer* m_FrameBuffer;
-		graphics::FrameBuffer* m_BlurBuffer;
+		graphics::FrameBuffer* m_LumaBuffer;
+		graphics::FrameBuffer* m_HBlurBuffer;
+		graphics::FrameBuffer* m_VBlurBuffer;
 		graphics::FrameBuffer* m_AABuffer;
+		graphics::CombineFilter* m_Bloom;
+
 
 
 		//UI Stuff

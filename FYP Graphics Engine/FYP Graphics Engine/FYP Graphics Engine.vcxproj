@@ -27,6 +27,7 @@
     <ClInclude Include="include\Engine\Engine.h" />
     <ClInclude Include="include\Engine\gameObject.h" />
     <ClInclude Include="include\Engine\Graphics\buffer.h" />
+    <ClInclude Include="include\Engine\Graphics\combineFilter.h" />
     <ClInclude Include="include\Engine\Graphics\frameBuffer.h" />
     <ClInclude Include="include\Engine\Graphics\Mesh.h" />
     <ClInclude Include="include\Engine\Graphics\Model.h" />

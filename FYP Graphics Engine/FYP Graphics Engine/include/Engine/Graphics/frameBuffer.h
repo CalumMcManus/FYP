@@ -13,7 +13,8 @@ namespace Engine { namespace graphics {
 		void Unbind();
 		void Render();
 		GLuint GetBufferID() { return m_FrameBuffer; };
-	private:
+		GLuint GetTextureID() { return m_Texture; };
+	protected:
 		GLuint m_QuadVAO;
 		GLuint m_QuadVBO;
 
