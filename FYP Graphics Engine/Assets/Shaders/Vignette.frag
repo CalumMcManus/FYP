@@ -2,14 +2,12 @@
 in vec2 Texcoord;
 out vec4 outColor;
 uniform sampler2D texFramebuffer;
-uniform float time;
-
 
 //RADIUS of our vignette, where 0.5 results in a circle fitting the screen
-const float RADIUS = 0.75;
+uniform float RADIUS = 0.75;
 
 //softness of our vignette, between 0.0 and 1.0
-const float SOFTNESS = 0.45;
+uniform float SOFTNESS = 0.45;
 
 
 const vec2 resolution = vec2(1280, 720);

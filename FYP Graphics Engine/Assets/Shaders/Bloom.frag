@@ -3,6 +3,9 @@ in vec2 Texcoord;
 out vec4 outColor;
 uniform sampler2D texFramebuffer;
 
+uniform float sigmaValue;
+uniform int kernalSize;
+
 const vec2 resolution = vec2(1280, 720);
 const float radius = 2.0;
 const vec2 dir = vec2(1.0, 0.0);
@@ -32,8 +35,8 @@ void main()
 	float hstep = dir.x;
 	float vstep = dir.y;
 	
-	for (int i = 0; i < 25; ++i) {
-		sum += texture2D(texFramebuffer, vec2(tc.x + (i-12)*blur*hstep, tc.y + (i-12)*blur*vstep)) * Guassian(i - 25 / 2, 3.0);
+	for (int i = 0; i < kernalSize; ++i) {
+		sum += texture2D(texFramebuffer, vec2(tc.x + (i-((kernalSize/2)-1))*blur*hstep, tc.y + (i-((kernalSize/2)-1))*blur*vstep)) * Guassian(i - kernalSize / 2, sigmaValue);
 	}
 	
 	//discard alpha for our simple demo, multiply by vertex color and return

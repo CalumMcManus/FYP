@@ -9,21 +9,8 @@ Engine::Scene::Scene(GLFWEngine* enginePointer)
 		glm::vec3(0, 1, 0)
 	);
 	m_TransformWindow = new UI::TransformWindow(enginePointer);
-	m_AABuffer = new graphics::FrameBuffer(enginePointer->m_Window, 4, new graphics::Shader("../Assets/Shaders/NoFilter.vert", "../Assets/Shaders/NoFilter.frag"));
-	m_FrameBuffer = new graphics::FrameBuffer(enginePointer->m_Window, 1, new graphics::Shader("../Assets/Shaders/NoFilter.vert", "../Assets/Shaders/NoFilter.frag"));
-	m_LumaBuffer = new graphics::FrameBuffer(enginePointer->m_Window, 1, new graphics::Shader("../Assets/Shaders/BrightOnly.vert", "../Assets/Shaders/BrightOnly.frag"));
-	m_HBlurBuffer = new graphics::FrameBuffer(enginePointer->m_Window, 1, new graphics::Shader("../Assets/Shaders/Bloom.vert", "../Assets/Shaders/Bloom.frag"));
-	m_VBlurBuffer = new graphics::FrameBuffer(enginePointer->m_Window, 1, new graphics::Shader("../Assets/Shaders/Bloom2.vert", "../Assets/Shaders/Bloom2.frag"));
-	m_Bloom = new graphics::CombineFilter(enginePointer->m_Window);
 
-
-	gui = new nanogui::FormHelper(enginePointer->m_Window);
-	windowGUI = gui->addWindow(Eigen::Vector2i(10, 10), "Lighting");
-
-	gui->addVariable("Ambient", m_SceneAmbient)
-		->setFinalCallback([](const nanogui::Color &c) {
-	});
-
+	m_PostProcessing = new graphics::PostProcessingStack(enginePointer);
 	
 
 
@@ -144,7 +131,7 @@ void Engine::Scene::Render()
 			if (selected)break;
 		}
 	}
-	m_AABuffer->Bind();
+	m_PostProcessing->Bind();
 	m_EnginePointer->m_Window->Clear();
 	m_SkyBox->Draw(P, V * glm::translate(camPos));
 	
@@ -173,36 +160,7 @@ void Engine::Scene::Render()
 		if (tempModel)
 			tempModel->getModel().render();
 	}
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_AABuffer->GetBufferID()); // src FBO (multi-sample)
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FrameBuffer->GetBufferID());     // dst FBO (single-sample)
-	glDrawBuffer(GL_COLOR_ATTACHMENT0);
-
-	glBlitFramebuffer(0, 0, 1280, 720,             // src rect
-		0, 0, 1280, 720,             // dst rect
-		GL_COLOR_BUFFER_BIT,             // buffer mask
-		GL_LINEAR);                      // scale filter
-	//glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	m_LumaBuffer->Bind();
-	m_EnginePointer->m_Window->Clear();	
-	m_FrameBuffer->Render();
-	m_HBlurBuffer->Bind();
-	m_EnginePointer->m_Window->Clear();
-	m_LumaBuffer->Render();
-	m_VBlurBuffer->Bind();
-	m_EnginePointer->m_Window->Clear();
-	m_HBlurBuffer->Render();
-	m_Bloom->Bind();
-	m_EnginePointer->m_Window->Clear();
-	m_VBlurBuffer->Render();
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	m_Bloom->Render(m_FrameBuffer->GetTextureID());
-	////glDrawBuffer(GL_COLOR_ATTACHMENT0);
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//////glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_BlurBuffer->GetBufferID());
-	//m_BlurBuffer->Render();
-	
+	m_PostProcessing->Render();
 }
 
 void Engine::Scene::AddObject(GameObject * obj)

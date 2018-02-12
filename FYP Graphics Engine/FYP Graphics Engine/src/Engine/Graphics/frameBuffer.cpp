@@ -56,6 +56,14 @@ Engine::graphics::FrameBuffer::FrameBuffer(Window * window, int samples, Shader*
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 1280, 720);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBODepthBuffer);
 
+
+		// Create depth normal buffer (This is optional)
+	/*	glGenRenderbuffers(1, &m_RBODepthBuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_RBODepthBuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 1280, 720);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBODepthBuffer);*/
+
+
 		// Bind Texture assuming we have created a texture
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_Texture, 0);
 	}
@@ -109,7 +117,6 @@ void Engine::graphics::FrameBuffer::Render()
 	glBindVertexArray(m_QuadVAO);
 	glDisable(GL_DEPTH_TEST);
 	m_ScreenShader->enable();
-	m_ScreenShader->setUniform1f("time", glfwGetTime());
 	GLint baseImageLoc = glGetUniformLocation(m_ScreenShader->getID(), "texFramebuffer");
 	glUniform1i(baseImageLoc, 2);
 	glActiveTexture(GL_TEXTURE2);

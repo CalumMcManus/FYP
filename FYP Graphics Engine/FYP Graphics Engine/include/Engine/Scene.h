@@ -6,8 +6,7 @@
 #include <Component\transform.h>
 #include <Engine\Graphics\shader.h>
 #include "Graphics\SkyBox.h"
-#include <Engine\Graphics\frameBuffer.h>
-#include <Engine\Graphics\combineFilter.h>
+#include <Engine\Graphics\postProcessingStack.h>
 #include <Engine\UI\TransformWindow.h>
 
 #include <glm.hpp>
@@ -37,14 +36,7 @@ namespace Engine
 		glm::mat4 V = glm::lookAt(glm::vec3(0, 7, -20), glm::vec3(0, 7, 0), glm::vec3(0, 1, 0));
 
 		GLFWEngine* m_EnginePointer;
-
-		graphics::FrameBuffer* m_FrameBuffer;
-		graphics::FrameBuffer* m_LumaBuffer;
-		graphics::FrameBuffer* m_HBlurBuffer;
-		graphics::FrameBuffer* m_VBlurBuffer;
-		graphics::FrameBuffer* m_AABuffer;
-		graphics::CombineFilter* m_Bloom;
-
+		graphics::PostProcessingStack* m_PostProcessing;
 
 
 		//UI Stuff
@@ -57,15 +49,13 @@ namespace Engine
 		float x = 0;
 		float y = 0;
 
-		float rotationStep = step * (180 / 3.141);
+		float rotationStep = step * (180 / 3.141f);
 
 		bool yAxis = true;
 		float fYAxis = 0;
 		glm::vec3 camPos = glm::vec3(0, 6, -15);
 
 		//NanoGUI
-		nanogui::FormHelper *gui;
-		nanogui::ref<nanogui::Window> windowGUI;
 
 		nanogui::Color m_SceneAmbient = nanogui::Color(1, 1, 1, 1);
 		float m_fAmbientInten = 0;

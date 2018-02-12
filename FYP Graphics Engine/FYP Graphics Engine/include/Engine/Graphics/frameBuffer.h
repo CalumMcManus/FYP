@@ -14,6 +14,7 @@ namespace Engine { namespace graphics {
 		void Render();
 		GLuint GetBufferID() { return m_FrameBuffer; };
 		GLuint GetTextureID() { return m_Texture; };
+		Shader* GetShader() { return m_ScreenShader; };
 	protected:
 		GLuint m_QuadVAO;
 		GLuint m_QuadVBO;
