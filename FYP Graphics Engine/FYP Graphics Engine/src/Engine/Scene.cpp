@@ -11,7 +11,7 @@ Engine::Scene::Scene(GLFWEngine* enginePointer)
 	m_TransformWindow = new UI::TransformWindow(enginePointer);
 	m_DefaultShader->enable();
 	SetUpGBuffer();
-	//m_PostProcessing = new graphics::PostProcessingStack(enginePointer);
+	m_PostProcessing = new graphics::PostProcessingStack(enginePointer);
 	
 
 
@@ -133,11 +133,17 @@ void Engine::Scene::Render()
 		}
 	}
 	//m_PostProcessing->Bind();
+	/*glBindFramebuffer(GL_FRAMEBUFFER, m_SkyFBO);
+	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, drawBuffers);
+	m_EnginePointer->m_Window->Clear();
+	m_SkyBox->Draw(P, V * glm::translate(camPos));
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 	glBindFramebuffer(GL_FRAMEBUFFER, m_DeferredFBO);
 	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(3, drawBuffers);
 	m_EnginePointer->m_Window->Clear();
-	//m_SkyBox->Draw(P, V * glm::translate(camPos));
+	m_SkyBox->Draw(P, V * glm::translate(camPos));
 	
 	m_DefaultShader->enable();
 	//m_DefaultShader->setUniformMat4("P", P);
@@ -200,20 +206,26 @@ void Engine::Scene::Render()
 	glBindVertexArray(m_QuadVAO);
 	glDisable(GL_DEPTH_TEST);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_PostProcessing->Bind();
 	m_EnginePointer->m_Window->Clear();
 	//Unbind();
 	glBindVertexArray(m_QuadVAO);
 	glDisable(GL_DEPTH_TEST);
 	//m_SSAOShader->enable();
-
+	
 	m_ScreenShader->enable();
 	GLint baseImageLoc = glGetUniformLocation(m_ScreenShader->getID(), "texFramebuffer");
 	glUniform1i(baseImageLoc, 2);
 	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, m_Color);
+	GLint ssaoLoc = glGetUniformLocation(m_ScreenShader->getID(), "ssaoTex");
+	glUniform1i(ssaoLoc, 3);
+	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, m_SSAOTexture);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	m_PostProcessing->Render();
 }
 
 void Engine::Scene::AddObject(GameObject * obj)
@@ -325,6 +337,18 @@ void Engine::Scene::SetUpGBuffer()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_SSAOTexture, 0);
+
+
+	glGenFramebuffers(1, &m_SkyFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_SkyFBO);
+
+	glGenTextures(1, &m_SkyTexture);
+	glBindTexture(GL_TEXTURE_2D, m_SkyTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(), 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_SkyTexture, 0);
 
 
 }

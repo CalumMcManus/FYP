@@ -20,21 +20,21 @@ Engine::graphics::PostProcessingStack::~PostProcessingStack()
 
 void Engine::graphics::PostProcessingStack::Bind()
 {
-	m_AABuffer->Bind();
+	m_FrameBuffer->Bind();
 }
 
 void Engine::graphics::PostProcessingStack::Render()
 {
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_AABuffer->GetBufferID()); // src FBO (multi-sample)
-	//glReadBuffer(GL_COLOR_ATTACHMENT0);
+	//glBindFramebuffer(GL_READ_FRAMEBUFFER, m_AABuffer->GetBufferID()); // src FBO (multi-sample)
+	////glReadBuffer(GL_COLOR_ATTACHMENT0);
 
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FrameBuffer->GetBufferID());     // dst FBO (single-sample)
-	//glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FrameBuffer->GetBufferID());     // dst FBO (single-sample)
+	////glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-	glBlitFramebuffer(0, 0, 1280, 720, 
-		0, 0, 1280, 720,             
-		GL_COLOR_BUFFER_BIT,           
-		GL_LINEAR);                    
+	//glBlitFramebuffer(0, 0, 1280, 720, 
+	//	0, 0, 1280, 720,             
+	//	GL_COLOR_BUFFER_BIT,           
+	//	GL_LINEAR);                    
 									
 	m_LumaBuffer->Bind();
 	m_EnginePointer->m_Window->Clear();
