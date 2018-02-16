@@ -14,6 +14,16 @@ Engine::graphics::FrameBuffer::FrameBuffer(Window * window, int samples, Shader*
 		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB, 1280, 720, GL_TRUE);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_Texture, 0);
 
+		glGenTextures(1, &m_NormalTexture);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_NormalTexture);
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB, 1280, 720, GL_TRUE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D_MULTISAMPLE, m_NormalTexture, 0);
+
+		glGenTextures(1, &m_PositionTexture);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_PositionTexture);
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB, 1280, 720, GL_TRUE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D_MULTISAMPLE, m_PositionTexture, 0);
+
 		glGenRenderbuffers(1, &m_TexColorBuffer);
 		glBindRenderbuffer(GL_RENDERBUFFER, m_TexColorBuffer);
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGB, 1280, 720);
@@ -27,6 +37,8 @@ Engine::graphics::FrameBuffer::FrameBuffer(Window * window, int samples, Shader*
 		);
 
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_Texture, 0);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_NormalTexture, 0);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_PositionTexture, 0);
 
 	}
 	else
@@ -50,28 +62,36 @@ Engine::graphics::FrameBuffer::FrameBuffer(Window * window, int samples, Shader*
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB, 1280, 720);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_TexColorBuffer);
 
-		// Create depth render buffer (This is optional)
+		glGenTextures(1, &m_NormalTexture);
+		glBindTexture(GL_TEXTURE_2D, m_NormalTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 1280, 720, 0, GL_RGB, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_NormalTexture, 0);
+
+		glGenTextures(1, &m_PositionTexture);
+		glBindTexture(GL_TEXTURE_2D, m_PositionTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 1280, 720, 0, GL_RGB, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_PositionTexture, 0);
+
+		// Create depth render buffer 
 		glGenRenderbuffers(1, &m_RBODepthBuffer);
 		glBindRenderbuffer(GL_RENDERBUFFER, m_RBODepthBuffer);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 1280, 720);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBODepthBuffer);
 
-
-		// Create depth normal buffer (This is optional)
-	/*	glGenRenderbuffers(1, &m_RBODepthBuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, m_RBODepthBuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 1280, 720);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBODepthBuffer);*/
-
-
 		// Bind Texture assuming we have created a texture
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_Texture, 0);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_NormalTexture, 0);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_PositionTexture, 0);
 	}
 	
 	
 
-	GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+	GLenum DrawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, DrawBuffers); // "1" is the size of DrawBuffers
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Frame Buffer: Contructor: Issue completing frame buffer with code " << glCheckFramebufferStatus(GL_FRAMEBUFFER) << " Samples: "<< samples << std::endl;

@@ -32,7 +32,10 @@ namespace Engine { namespace graphics {
 		GLuint m_FrameBuffer;
 		GLuint m_TexColorBuffer;
 		GLuint m_RBODepthBuffer;
+
 		GLuint m_Texture;
+		GLuint m_NormalTexture;
+		GLuint m_PositionTexture;
 
 		int m_Samples;
 

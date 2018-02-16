@@ -49,7 +49,7 @@ namespace Engine { namespace graphics {
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)
 		{
-			std::cout << "OpenGL Enum Error: " << error << " " << glad_glGetString(error) << std::endl;
+			std::cout << "OpenGL Enum Error: " << error << " " << std::endl;// glad_glGetString(error) << std::endl;
 		}
 
 		glfwPollEvents();

@@ -26,9 +26,10 @@ void Engine::graphics::PostProcessingStack::Bind()
 void Engine::graphics::PostProcessingStack::Render()
 {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_AABuffer->GetBufferID()); // src FBO (multi-sample)
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
+	//glReadBuffer(GL_COLOR_ATTACHMENT0);
+
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FrameBuffer->GetBufferID());     // dst FBO (single-sample)
-	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	//glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
 	glBlitFramebuffer(0, 0, 1280, 720, 
 		0, 0, 1280, 720,             
@@ -37,6 +38,9 @@ void Engine::graphics::PostProcessingStack::Render()
 									
 	m_LumaBuffer->Bind();
 	m_EnginePointer->m_Window->Clear();
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//GLenum DrawBuffers[3] = { GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+	//glDrawBuffers(3, DrawBuffers); // "1" is the size of DrawBuffers
 	m_FrameBuffer->Render();
 
 	m_HBlurBuffer->GetShader()->enable();

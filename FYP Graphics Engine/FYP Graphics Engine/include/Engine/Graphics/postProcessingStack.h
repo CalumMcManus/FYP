@@ -12,6 +12,8 @@ namespace Engine { namespace graphics {
 		~PostProcessingStack();
 		void Bind();
 		void Render();
+
+
 	private:
 		//Multi-Sample
 		graphics::FrameBuffer* m_AABuffer;

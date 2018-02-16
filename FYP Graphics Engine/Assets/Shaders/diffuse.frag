@@ -7,12 +7,18 @@ in vec2 uv;
 
 uniform vec3 light_pos;
 uniform vec3 light_ambient;
+
 uniform sampler2D texture2D;
+layout (location = 3) out vec3 ao_normal;
 
 in vec3 cameraPos;
 in vec3 rayDir;
 
+in vec3 normal;
+
 void main () {
+
+	ao_normal = normalize(normal);
 	vec4 test = vec4(0, 0, 0, 0);
 
 	vec3 vDir = normalize(position.xyz - cameraPos);

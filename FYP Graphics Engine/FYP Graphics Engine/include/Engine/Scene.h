@@ -13,6 +13,8 @@
 #include <gtc\matrix_transform.hpp>
 #include <gtx\transform.hpp>
 #include <vector>
+#include <glad\glad.h>
+#include <random>
 namespace Engine
 {
 	class Scene
@@ -27,7 +29,7 @@ namespace Engine
 		void AddObject(GameObject* obj);
 
 	private:
-		graphics::Shader* m_DefaultShader = new graphics::Shader("../Assets/Shaders/diffuse.vert", "../Assets/Shaders/diffuse.frag");
+		graphics::Shader* m_DefaultShader = new graphics::Shader("../Assets/Shaders/differed.vert", "../Assets/Shaders/differed.frag");
 		graphics::SkyBox* m_SkyBox = new graphics::SkyBox("../Assets/Textures/Cubemap/", "");
 		std::vector<GameObject*> v_Objects;
 
@@ -63,5 +65,34 @@ namespace Engine
 		//Window Test
 		nanogui::Window* m_SceneLighting;
 
+		//gBuffer Test
+		GLuint m_DeferredFBO;
+		GLuint m_DepthBuffer;
+		GLuint m_Color;
+		GLuint m_Normal;
+		GLuint m_Position;
+		void SetUpGBuffer();
+		void createBuffer(GLenum texUnit, GLenum format, GLuint& texid);
+		graphics::Shader* m_ScreenShader = new graphics::Shader("../Assets/Shaders/NoFilter.vert", "../Assets/Shaders/NoFilter.frag");;
+
+		GLuint m_QuadVAO;
+		GLuint m_QuadVBO;
+
+		float points[24] = {
+			-1.0f,  1.0f,  0.0f, 1.0f,
+			1.0f,  1.0f,  1.0f, 1.0f,
+			1.0f, -1.0f,  1.0f, 0.0f,
+
+			1.0f, -1.0f,  1.0f, 0.0f,
+			-1.0f, -1.0f,  0.0f, 0.0f,
+			-1.0f,  1.0f,  0.0f, 1.0f
+		};
+
+		//SSAO test
+		GLuint m_SSAOFBO;
+		GLuint m_SSAOTexture;
+		GLuint m_NoiseTexture;
+		graphics::Shader* m_SSAOShader = new graphics::Shader("../Assets/Shaders/SSAO.vert", "../Assets/Shaders/SSAO.frag");
+		std::vector<glm::vec3> ssaoKernel;
 	};
 }

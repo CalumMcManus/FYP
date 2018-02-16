@@ -9,8 +9,9 @@ Engine::Scene::Scene(GLFWEngine* enginePointer)
 		glm::vec3(0, 1, 0)
 	);
 	m_TransformWindow = new UI::TransformWindow(enginePointer);
-
-	m_PostProcessing = new graphics::PostProcessingStack(enginePointer);
+	m_DefaultShader->enable();
+	SetUpGBuffer();
+	//m_PostProcessing = new graphics::PostProcessingStack(enginePointer);
 	
 
 
@@ -131,20 +132,24 @@ void Engine::Scene::Render()
 			if (selected)break;
 		}
 	}
-	m_PostProcessing->Bind();
+	//m_PostProcessing->Bind();
+	glBindFramebuffer(GL_FRAMEBUFFER, m_DeferredFBO);
+	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, drawBuffers);
 	m_EnginePointer->m_Window->Clear();
-	m_SkyBox->Draw(P, V * glm::translate(camPos));
+	//m_SkyBox->Draw(P, V * glm::translate(camPos));
 	
 	m_DefaultShader->enable();
-	m_DefaultShader->setUniformMat4("P", P);
-	m_DefaultShader->setUniformMat4("V", V );
-	m_DefaultShader->setUniform3f("light_pos", glm::vec3(1, 1, -2));
-	m_DefaultShader->setUniform3f("light_ambient", glm::vec3(m_SceneAmbient.x(), m_SceneAmbient.y(), m_SceneAmbient.z()));
-	//m_DefaultShader->setUniform3f("light_ambient", tempColor);
-	//m_DefaultShader->setUniform3f("ray_dir", test);
-	m_DefaultShader->setUniform3f("cam_pos", camPos);
+	//m_DefaultShader->setUniformMat4("P", P);
+	//m_DefaultShader->setUniformMat4("V", V );
+	//m_DefaultShader->setUniform3f("light_pos", glm::vec3(1, 1, -2));
+	//m_DefaultShader->setUniform3f("light_ambient", glm::vec3(m_SceneAmbient.x(), m_SceneAmbient.y(), m_SceneAmbient.z()));
+	////m_DefaultShader->setUniform3f("light_ambient", tempColor);
+	////m_DefaultShader->setUniform3f("ray_dir", test);
+	//m_DefaultShader->setUniform3f("cam_pos", camPos);
 
-	
+
+	m_DefaultShader->setUniformMat4("Projection", P);
 	for (int i = 0; i < v_Objects.size(); i++)
 	{
 		//TODO:: Texture and other map handling needs to be moved into material
@@ -152,18 +157,190 @@ void Engine::Scene::Render()
 		Components::ModelRenderer* tempModel = v_Objects[i]->getComponent<Components::ModelRenderer>();
 		Components::Texture* tempTexture = v_Objects[i]->getComponent<Components::Texture>();
 		
-		if(tempTrasnform)
-			m_DefaultShader->setUniformMat4("M", tempTrasnform->getMatrix());
-		
+		if (tempTrasnform)
+		{
+			glm::mat4 MVP = P * V * tempTrasnform->getMatrix();
+			glm::mat4 MV = V * tempTrasnform->getMatrix();
+			m_DefaultShader->setUniformMat4("MVP", MVP);
+			m_DefaultShader->setUniformMat4("ModelViewMatrix", MV);
+			glm::mat3 normalMatrix = glm::transpose(glm::inverse(MV));
+			m_DefaultShader->setUniformMat3("NormalMatrix", normalMatrix);
+
+			//m_DefaultShader->setUniformMat4("M", tempTrasnform->getMatrix());
+		}
 		if (tempTexture)
 			tempTexture->bindTexture(m_DefaultShader);
 		if (tempModel)
 			tempModel->getModel().render();
 	}
-	m_PostProcessing->Render();
+	//m_PostProcessing->Render();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOFBO);
+	drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, drawBuffers);
+	glClear(GL_COLOR_BUFFER_BIT);
+	m_SSAOShader->enable();
+	GLint posImageLoc = glGetUniformLocation(m_SSAOShader->getID(), "gPosition");
+	glUniform1i(posImageLoc, 1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_Position);
+	GLint normImageLoc = glGetUniformLocation(m_SSAOShader->getID(), "gNormal");
+	glUniform1i(normImageLoc, 2);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, m_Normal);
+	GLint noiseImageLoc = glGetUniformLocation(m_SSAOShader->getID(), "texNoise");
+	glUniform1i(noiseImageLoc, 3);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, m_NoiseTexture);
+	
+	glUniform3fv(glGetUniformLocation(m_SSAOShader->getID(), "samples"), 64,
+		glm::value_ptr(ssaoKernel[0]));
+	m_SSAOShader->setUniformMat4("projection", P);
+	
+	glBindVertexArray(m_QuadVAO);
+	glDisable(GL_DEPTH_TEST);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_EnginePointer->m_Window->Clear();
+	//Unbind();
+	glBindVertexArray(m_QuadVAO);
+	glDisable(GL_DEPTH_TEST);
+	//m_SSAOShader->enable();
+
+	m_ScreenShader->enable();
+	GLint baseImageLoc = glGetUniformLocation(m_ScreenShader->getID(), "texFramebuffer");
+	glUniform1i(baseImageLoc, 2);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, m_SSAOTexture);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Engine::Scene::AddObject(GameObject * obj)
 {
 	v_Objects.push_back(obj);
+}
+float lerp(float a, float b, float f)
+{
+	return a + f * (b - a);
+}
+void Engine::Scene::SetUpGBuffer()
+{
+	//Set up FBO
+	glGenFramebuffers(1, &m_DeferredFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_DeferredFBO);
+
+	//Depth Buffer
+	glGenRenderbuffers(1, &m_DepthBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, m_DepthBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight());
+
+	createBuffer(GL_TEXTURE1, GL_RGB32F, m_Position); //Position
+	//glActiveTexture(GL_TEXTURE1);
+	//glGenTextures(1, &m_Position);
+	//glBindTexture(GL_TEXTURE_2D, m_Position);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(), 0, GL_RGB, GL_FLOAT, NULL);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	createBuffer(GL_TEXTURE2, GL_RGB32F, m_Normal); //Normal
+	createBuffer(GL_TEXTURE3, GL_RGB8, m_Color); //Color
+
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_DepthBuffer);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_Position, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_Normal, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_Color, 0);
+
+	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, drawBuffers);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Frame Buffer: Contructor: Issue completing frame buffer with code " << glCheckFramebufferStatus(GL_FRAMEBUFFER) << std::endl;
+
+	//Setup Quad VAO
+
+	glGenBuffers(1, &m_QuadVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVBO);
+	glBufferData(GL_ARRAY_BUFFER, 24 * sizeof(float), points, GL_STATIC_DRAW);
+
+	glGenVertexArrays(1, &m_QuadVAO);
+	glBindVertexArray(m_QuadVAO);
+	//glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVBO);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	GLint posAttrib = glGetAttribLocation(m_ScreenShader->getID(), "position");
+	glEnableVertexAttribArray(posAttrib);
+	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+
+	GLint texAttrib = glGetAttribLocation(m_ScreenShader->getID(), "texcoord");
+	glEnableVertexAttribArray(texAttrib);
+	glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
+
+
+	//SSAO
+	std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between 0.0 - 1.0
+	std::default_random_engine generator;
+
+	for (unsigned int i = 0; i < 64; ++i)
+	{
+		glm::vec3 sample(
+			randomFloats(generator) * 2.0 - 1.0,
+			randomFloats(generator) * 2.0 - 1.0,
+			randomFloats(generator)
+		);
+		sample = glm::normalize(sample);
+		sample *= randomFloats(generator);
+		float scale = (float)i / 64.0;
+		scale = lerp(0.1f, 1.0f, scale * scale);
+		sample *= scale;
+		ssaoKernel.push_back(sample);
+	}
+	std::vector<glm::vec3> ssaoNoise;
+	for (unsigned int i = 0; i < 16; i++)
+	{
+		glm::vec3 noise(
+			randomFloats(generator) * 2.0 - 1.0,
+			randomFloats(generator) * 2.0 - 1.0,
+			0.0f);
+		ssaoNoise.push_back(noise);
+	}
+
+	glGenTextures(1, &m_NoiseTexture);
+	glBindTexture(GL_TEXTURE_2D, m_NoiseTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glGenFramebuffers(1, &m_SSAOFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOFBO);
+
+	glGenTextures(1, &m_SSAOTexture);
+	glBindTexture(GL_TEXTURE_2D, m_SSAOTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(), 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_SSAOTexture, 0);
+
+
+}
+
+void Engine::Scene::createBuffer(GLenum texUnit, GLenum format, GLuint & texid)
+{
+	glActiveTexture(texUnit);
+	glGenTextures(1, &texid);
+	glBindTexture(GL_TEXTURE_2D, texid);
+	glTexStorage2D(GL_TEXTURE_2D, 1, format, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	//glGenTextures(1, &texid);
+	//glBindTexture(GL_TEXTURE_2D, texid);
+	//glTexImage2D(GL_TEXTURE_2D, 0, format, 1280, 720, 0, GL_RGB, GL_FLOAT, NULL);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
