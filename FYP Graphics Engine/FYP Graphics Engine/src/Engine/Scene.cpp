@@ -132,13 +132,6 @@ void Engine::Scene::Render()
 			if (selected)break;
 		}
 	}
-	//m_PostProcessing->Bind();
-	/*glBindFramebuffer(GL_FRAMEBUFFER, m_SkyFBO);
-	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, drawBuffers);
-	m_EnginePointer->m_Window->Clear();
-	m_SkyBox->Draw(P, V * glm::translate(camPos));
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 	glBindFramebuffer(GL_FRAMEBUFFER, m_DeferredFBO);
 	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(3, drawBuffers);
@@ -180,6 +173,36 @@ void Engine::Scene::Render()
 			tempModel->getModel().render();
 	}
 	//m_PostProcessing->Render();
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_DeferredFBO);
+	glReadBuffer(GL_COLOR_ATTACHMENT2);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_DeferredFBOSingleSample);
+	glDrawBuffer(GL_COLOR_ATTACHMENT2);
+	glBlitFramebuffer(0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+		0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+		GL_COLOR_BUFFER_BIT,
+		GL_LINEAR);
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_DeferredFBO);
+	glReadBuffer(GL_COLOR_ATTACHMENT1);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_DeferredFBOSingleSample);
+	glDrawBuffer(GL_COLOR_ATTACHMENT1);
+	glBlitFramebuffer(0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+		0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+		GL_COLOR_BUFFER_BIT,
+		GL_LINEAR);
+
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_DeferredFBO);
+	glReadBuffer(GL_COLOR_ATTACHMENT0);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_DeferredFBOSingleSample);
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	glBlitFramebuffer(0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+		0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+		GL_COLOR_BUFFER_BIT,
+		GL_LINEAR);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOFBO);
 	drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
@@ -189,11 +212,11 @@ void Engine::Scene::Render()
 	GLint posImageLoc = glGetUniformLocation(m_SSAOShader->getID(), "gPosition");
 	glUniform1i(posImageLoc, 1);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, m_Position);
+	glBindTexture(GL_TEXTURE_2D, m_PositionSS);
 	GLint normImageLoc = glGetUniformLocation(m_SSAOShader->getID(), "gNormal");
 	glUniform1i(normImageLoc, 2);
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, m_Normal);
+	glBindTexture(GL_TEXTURE_2D, m_NormalSS);
 	GLint noiseImageLoc = glGetUniformLocation(m_SSAOShader->getID(), "texNoise");
 	glUniform1i(noiseImageLoc, 3);
 	glActiveTexture(GL_TEXTURE3);
@@ -207,6 +230,8 @@ void Engine::Scene::Render()
 	glDisable(GL_DEPTH_TEST);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	m_PostProcessing->Bind();
+	GLenum drawBuffersTwo[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(1, drawBuffersTwo);
 	m_EnginePointer->m_Window->Clear();
 	//Unbind();
 	glBindVertexArray(m_QuadVAO);
@@ -217,7 +242,7 @@ void Engine::Scene::Render()
 	GLint baseImageLoc = glGetUniformLocation(m_ScreenShader->getID(), "texFramebuffer");
 	glUniform1i(baseImageLoc, 2);
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, m_Color);
+	glBindTexture(GL_TEXTURE_2D, m_ColorSS);
 	GLint ssaoLoc = glGetUniformLocation(m_ScreenShader->getID(), "ssaoTex");
 	glUniform1i(ssaoLoc, 3);
 	glActiveTexture(GL_TEXTURE3);
@@ -238,6 +263,7 @@ float lerp(float a, float b, float f)
 }
 void Engine::Scene::SetUpGBuffer()
 {
+	glEnable(GL_MULTISAMPLE);
 	//Set up FBO
 	glGenFramebuffers(1, &m_DeferredFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_DeferredFBO);
@@ -245,26 +271,61 @@ void Engine::Scene::SetUpGBuffer()
 	//Depth Buffer
 	glGenRenderbuffers(1, &m_DepthBuffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, m_DepthBuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight());
+	glRenderbufferStorageMultisample(GL_RENDERBUFFER, m_iSamples, GL_DEPTH_COMPONENT, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight());
 
-	createBuffer(GL_TEXTURE1, GL_RGB32F, m_Position); //Position
-	//glActiveTexture(GL_TEXTURE1);
-	//glGenTextures(1, &m_Position);
-	//glBindTexture(GL_TEXTURE_2D, m_Position);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(), 0, GL_RGB, GL_FLOAT, NULL);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	createBuffer(GL_TEXTURE2, GL_RGB32F, m_Normal); //Normal
-	createBuffer(GL_TEXTURE3, GL_RGB8, m_Color); //Color
+	createBufferMultisample(GL_TEXTURE1, GL_RGB32F, m_Position); //Position
+	createBufferMultisample(GL_TEXTURE2, GL_RGB32F, m_Normal); //Normal
+	createBufferMultisample(GL_TEXTURE3, GL_RGB8, m_Color); //Color
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_Position, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D_MULTISAMPLE, m_Normal, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D_MULTISAMPLE, m_Color, 0);
 
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_DepthBuffer);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_Position, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_Normal, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_Color, 0);
 
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_Position, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_Normal, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_Color, 0);
+	
 	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, drawBuffers);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Frame Buffer: Contructor: Issue completing frame buffer with code " << glCheckFramebufferStatus(GL_FRAMEBUFFER) << std::endl;
+
+	//Single Sample
+	//Set up FBO
+	glGenFramebuffers(1, &m_DeferredFBOSingleSample);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_DeferredFBOSingleSample);
+
+	
+
+	//Depth Buffer
+	glGenRenderbuffers(1, &m_DepthBufferSS);
+	glBindRenderbuffer(GL_RENDERBUFFER, m_DepthBufferSS);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight());
+
+	createBuffer(GL_TEXTURE1, GL_RGB32F, m_PositionSS); //Position
+	createBuffer(GL_TEXTURE2, GL_RGB32F, m_NormalSS); //Normal
+	createBuffer(GL_TEXTURE3, GL_RGB8, m_ColorSS); //Color
+
+
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_DepthBufferSS);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_PositionSS, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_NormalSS, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_ColorSS, 0);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_PositionSS, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_NormalSS, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_ColorSS, 0);
+
+	/*glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_PositionSS, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_NormalSS, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_ColorSS, 0);*/
+	/*glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_PositionSSBuffer);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_RENDERBUFFER, m_NormalSSBuffer);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_RENDERBUFFER, m_ColorSSBuffer);*/
+	//drawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(3, drawBuffers);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -339,32 +400,53 @@ void Engine::Scene::SetUpGBuffer()
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_SSAOTexture, 0);
 
 
-	glGenFramebuffers(1, &m_SkyFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_SkyFBO);
-
-	glGenTextures(1, &m_SkyTexture);
-	glBindTexture(GL_TEXTURE_2D, m_SkyTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(), 0, GL_RGB, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_SkyTexture, 0);
-
-
 }
 
 void Engine::Scene::createBuffer(GLenum texUnit, GLenum format, GLuint & texid)
 {
-	glActiveTexture(texUnit);
+
+	//glActiveTexture(texUnit);
+	//glGenTextures(1, &texid);
+	//glBindTexture(GL_TEXTURE_2D, texid);
+
+	//glTexImage2D(GL_TEXTURE_2D, 0, format, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(), 0, GL_RGB, GL_FLOAT, NULL);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
 	glGenTextures(1, &texid);
 	glBindTexture(GL_TEXTURE_2D, texid);
-	glTexStorage2D(GL_TEXTURE_2D, 1, format, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight());
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, format, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0
+	);
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
+
+	
+
+
+}
+
+void Engine::Scene::createBufferMultisample(GLenum texUnit, GLenum format, GLuint & texid)
+{
+
+	//glActiveTexture(texUnit);
 	//glGenTextures(1, &texid);
-	//glBindTexture(GL_TEXTURE_2D, texid);
-	//glTexImage2D(GL_TEXTURE_2D, 0, format, 1280, 720, 0, GL_RGB, GL_FLOAT, NULL);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texid);
+	//glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, format, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(), GL_TRUE);
+
+	//glGenTextures(1, &texUnit);
+	//glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texUnit);
+	//glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, format, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(), GL_TRUE);
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D_MULTISAMPLE, texUnit, 0);
+
+	//glGenRenderbuffers(1, &texUnit);
+	//glBindRenderbuffer(GL_RENDERBUFFER, texUnit);
+	//glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, format, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight());
+
+	glGenTextures(1, &texid);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texid);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, m_iSamples, format, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(), GL_TRUE);
+	
 }

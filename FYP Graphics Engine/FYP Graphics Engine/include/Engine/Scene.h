@@ -66,13 +66,24 @@ namespace Engine
 		nanogui::Window* m_SceneLighting;
 
 		//gBuffer Test
+		int m_iSamples = 16;
+
+		GLuint m_DeferredFBOSingleSample;
+		GLuint m_DepthBufferSS;
+		GLuint m_ColorSS;
+		GLuint m_NormalSS;
+		GLuint m_PositionSS;
+		GLuint m_PositionSSTex;
+
 		GLuint m_DeferredFBO;
 		GLuint m_DepthBuffer;
 		GLuint m_Color;
 		GLuint m_Normal;
 		GLuint m_Position;
+		GLuint m_PositionTex;
 		void SetUpGBuffer();
 		void createBuffer(GLenum texUnit, GLenum format, GLuint& texid);
+		void createBufferMultisample(GLenum texUnit, GLenum format, GLuint& texid);
 		graphics::Shader* m_ScreenShader = new graphics::Shader("../Assets/Shaders/AddSSAO.vert", "../Assets/Shaders/AddSSAO.frag");;
 
 		GLuint m_QuadVAO;
@@ -94,9 +105,5 @@ namespace Engine
 		GLuint m_NoiseTexture;
 		graphics::Shader* m_SSAOShader = new graphics::Shader("../Assets/Shaders/SSAO.vert", "../Assets/Shaders/SSAO.frag");
 		std::vector<glm::vec3> ssaoKernel;
-
-		//Redner Skybox
-		GLuint m_SkyFBO;
-		GLuint m_SkyTexture;
 	};
 }
