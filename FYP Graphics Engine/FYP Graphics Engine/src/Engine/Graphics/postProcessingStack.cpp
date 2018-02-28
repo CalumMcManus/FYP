@@ -3,49 +3,250 @@
 Engine::graphics::PostProcessingStack::PostProcessingStack(GLFWEngine * enginePointer)
 {
 	m_EnginePointer = enginePointer;
-	m_AABuffer = new graphics::FrameBuffer(enginePointer->m_Window, 4, new graphics::Shader("../Assets/Shaders/NoFilter.vert", "../Assets/Shaders/NoFilter.frag"));
-	m_FrameBuffer = new graphics::FrameBuffer(enginePointer->m_Window, 1, new graphics::Shader("../Assets/Shaders/NoFilter.vert", "../Assets/Shaders/NoFilter.frag"));
-	m_LumaBuffer = new graphics::FrameBuffer(enginePointer->m_Window, 1, new graphics::Shader("../Assets/Shaders/BrightOnly.vert", "../Assets/Shaders/BrightOnly.frag"));
-	m_HBlurBuffer = new graphics::FrameBuffer(enginePointer->m_Window, 1, new graphics::Shader("../Assets/Shaders/Bloom.vert", "../Assets/Shaders/Bloom.frag"));
-	m_VBlurBuffer = new graphics::FrameBuffer(enginePointer->m_Window, 1, new graphics::Shader("../Assets/Shaders/Bloom2.vert", "../Assets/Shaders/Bloom2.frag"));
-	m_Vignette = new graphics::FrameBuffer(enginePointer->m_Window, 1, new graphics::Shader("../Assets/Shaders/Vignette.vert", "../Assets/Shaders/Vignette.frag"));
-	m_Bloom = new graphics::CombineFilter(enginePointer->m_Window);
+	//Setup Quad VAO
 
+	glGenBuffers(1, &m_QuadVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVBO);
+	glBufferData(GL_ARRAY_BUFFER, 24 * sizeof(float), points, GL_STATIC_DRAW);
+
+	glGenVertexArrays(1, &m_QuadVAO);
+	glBindVertexArray(m_QuadVAO);
+	//glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVBO);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	GLint posAttrib = glGetAttribLocation(m_AddSSAO->getID(), "position");
+	glEnableVertexAttribArray(posAttrib);
+	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+
+	GLint texAttrib = glGetAttribLocation(m_AddSSAO->getID(), "texcoord");
+	glEnableVertexAttribArray(texAttrib);
+	glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
+	//SSAO
+	std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between 0.0 - 1.0
+	std::default_random_engine generator;
+
+	for (unsigned int i = 0; i < 64; ++i)
+	{
+		glm::vec3 sample(
+			randomFloats(generator) * 2.0 - 1.0,
+			randomFloats(generator) * 2.0 - 1.0,
+			randomFloats(generator)
+		);
+		sample = glm::normalize(sample);
+		sample *= randomFloats(generator);
+		float scale = (float)i / 64.0;
+		scale = lerp(0.1f, 1.0f, scale * scale);
+		sample *= scale;
+		ssaoKernel.push_back(sample);
+	}
+	std::vector<glm::vec3> ssaoNoise;
+	for (unsigned int i = 0; i < 16; i++)
+	{
+		glm::vec3 noise(
+			randomFloats(generator) * 2.0 - 1.0,
+			randomFloats(generator) * 2.0 - 1.0,
+			0.0f);
+		ssaoNoise.push_back(noise);
+	}
+
+	glGenTextures(1, &m_NoiseTexture);
+	glBindTexture(GL_TEXTURE_2D, m_NoiseTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	SetUp();
 	SetUpUI();
 }
+void Engine::graphics::PostProcessingStack::SetUp()
+{
+	delete m_MSBuffer; m_MSBuffer = nullptr;
+	delete m_SSBuffer; m_SSBuffer = nullptr;
+	delete m_FrameBuffer; m_FrameBuffer = nullptr;
+	delete m_LumaBuffer; m_LumaBuffer = nullptr;
+	delete m_HBlurBuffer; m_HBlurBuffer = nullptr;
+	delete m_VBlurBuffer; m_VBlurBuffer = nullptr;
+	delete m_Vignette; m_Vignette = nullptr;
+	delete m_FrameBufferAO; m_FrameBufferAO = nullptr;
+	delete m_HBlurBufferAO; m_HBlurBufferAO = nullptr;
+	delete m_VBlurBufferAO; m_VBlurBufferAO = nullptr;
+	delete m_FinalBlueAO; m_FinalBlueAO = nullptr;
+	delete m_Bloom; m_Bloom = nullptr;
 
+		
+	m_MSBuffer = new graphics::GBuffer(m_EnginePointer->m_Window, 4, m_NoFilter);
+	m_SSBuffer = new graphics::GBuffer(m_EnginePointer->m_Window, 1, m_NoFilter);
+
+	m_FrameBuffer = new graphics::FrameBuffer(m_EnginePointer->m_Window, m_NoFilter);
+	m_LumaBuffer = new graphics::FrameBuffer(m_EnginePointer->m_Window, new graphics::Shader("../Assets/Shaders/BrightOnly.vert", "../Assets/Shaders/BrightOnly.frag"));
+	m_HBlurBuffer = new graphics::FrameBuffer(m_EnginePointer->m_Window, m_BlurH);
+	m_VBlurBuffer = new graphics::FrameBuffer(m_EnginePointer->m_Window, m_BlurV);
+	m_Vignette = new graphics::FrameBuffer(m_EnginePointer->m_Window, new graphics::Shader("../Assets/Shaders/Vignette.vert", "../Assets/Shaders/Vignette.frag"));
+
+	m_FrameBufferAO = new graphics::FrameBuffer(m_EnginePointer->m_Window, m_NoFilter);
+	m_HBlurBufferAO = new graphics::FrameBuffer(m_EnginePointer->m_Window, m_BlurH);
+	m_VBlurBufferAO = new graphics::FrameBuffer(m_EnginePointer->m_Window, m_BlurV);
+	m_FinalBlueAO = new graphics::FrameBuffer(m_EnginePointer->m_Window, m_NoFilter);
+	m_Bloom = new graphics::CombineFilter(m_EnginePointer->m_Window);
+
+	
+	glDeleteFramebuffers(1, &m_SSAOFBO);
+	glDeleteTextures(1, &m_SSAOTexture);
+
+	glGenFramebuffers(1, &m_SSAOFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOFBO);
+
+	glGenTextures(1, &m_SSAOTexture);
+	glBindTexture(GL_TEXTURE_2D, m_SSAOTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(), 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_SSAOTexture, 0);
+}
 Engine::graphics::PostProcessingStack::~PostProcessingStack()
 {
 }
 
 void Engine::graphics::PostProcessingStack::Bind()
 {
-	m_FrameBuffer->Bind();
+	if (m_MS)
+		m_MSBuffer->Bind();
+	else
+		m_SSBuffer->Bind();
+	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, drawBuffers);
+	m_EnginePointer->m_Window->Clear();
 }
 
-void Engine::graphics::PostProcessingStack::Render()
+void Engine::graphics::PostProcessingStack::Render(glm::mat4 P)
 {
-	//glBindFramebuffer(GL_READ_FRAMEBUFFER, m_AABuffer->GetBufferID()); // src FBO (multi-sample)
-	////glReadBuffer(GL_COLOR_ATTACHMENT0);
+	if (m_MS)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MSBuffer->GetBufferID());
+		glReadBuffer(GL_COLOR_ATTACHMENT2);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_SSBuffer->GetBufferID());
+		glDrawBuffer(GL_COLOR_ATTACHMENT2);
+		glBlitFramebuffer(0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+			0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+			GL_COLOR_BUFFER_BIT,
+			GL_LINEAR);
 
-	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_FrameBuffer->GetBufferID());     // dst FBO (single-sample)
-	////glDrawBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MSBuffer->GetBufferID());
+		glReadBuffer(GL_COLOR_ATTACHMENT1);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_SSBuffer->GetBufferID());
+		glDrawBuffer(GL_COLOR_ATTACHMENT1);
+		glBlitFramebuffer(0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+			0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+			GL_COLOR_BUFFER_BIT,
+			GL_LINEAR);
 
-	//glBlitFramebuffer(0, 0, 1280, 720, 
-	//	0, 0, 1280, 720,             
-	//	GL_COLOR_BUFFER_BIT,           
-	//	GL_LINEAR);                    
-									
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MSBuffer->GetBufferID());
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_SSBuffer->GetBufferID());
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+		glBlitFramebuffer(0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+			0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+			GL_COLOR_BUFFER_BIT,
+			GL_LINEAR);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOFBO);
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	m_SSAOShader->enable();
+	GLint posImageLoc = glGetUniformLocation(m_SSAOShader->getID(), "gPosition");
+	glUniform1i(posImageLoc, 1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetPos());
+	GLint normImageLoc = glGetUniformLocation(m_SSAOShader->getID(), "gNormal");
+	glUniform1i(normImageLoc, 2);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetNormal());
+	GLint noiseImageLoc = glGetUniformLocation(m_SSAOShader->getID(), "texNoise");
+	glUniform1i(noiseImageLoc, 3);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, m_NoiseTexture);
+
+	glUniform3fv(glGetUniformLocation(m_SSAOShader->getID(), "samples"), 64,
+		glm::value_ptr(ssaoKernel[0]));
+	m_SSAOShader->setUniformMat4("projection", P);
+
+	m_FrameBufferAO->Bind();
+	glBindVertexArray(m_QuadVAO);
+	glDisable(GL_DEPTH_TEST);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	
+	m_HBlurBufferAO->Bind();
+	m_HBlurBuffer->GetShader()->enable();
+	m_HBlurBuffer->GetShader()->setUniform1f("sigmaValue", 3);
+	m_HBlurBuffer->GetShader()->setUniform1i("kernalSize", 25);	
+	m_EnginePointer->m_Window->Clear();
+	m_FrameBufferAO->Render();
+	
+	m_VBlurBufferAO->Bind();
+	m_VBlurBufferAO->GetShader()->enable();
+	m_VBlurBufferAO->GetShader()->setUniform1f("sigmaValue", 3);
+	m_VBlurBufferAO->GetShader()->setUniform1i("kernalSize", 25);	
+	m_EnginePointer->m_Window->Clear();
+	m_HBlurBufferAO->Render();
+	
+	m_FinalBlueAO->Bind();
+	m_EnginePointer->m_Window->Clear();
+	m_VBlurBufferAO->Render();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_EnginePointer->m_Window->Clear();
+	m_FinalBlueAO->Render();
+	
+	//return;
+	//GLenum drawBuffersTwo[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	//glDrawBuffers(1, drawBuffersTwo);
+	m_EnginePointer->m_Window->Clear();
+		
+	//Unbind();
+	m_FrameBuffer->Bind();
+	glBindVertexArray(m_QuadVAO);
+	glDisable(GL_DEPTH_TEST);
+	//m_SSAOShader->enable();
+	m_AddSSAO->enable();
+	if (m_SSAO)
+	{
+		GLint baseImageLoc = glGetUniformLocation(m_AddSSAO->getID(), "texFramebuffer");
+		glUniform1i(baseImageLoc, 2);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetTextureID());
+		GLint ssaoLoc = glGetUniformLocation(m_AddSSAO->getID(), "ssaoTex");
+		glUniform1i(ssaoLoc, 3);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, m_FinalBlueAO->GetTextureID());
+			
+	}
+	else
+	{
+		m_NoFilter->enable();
+		GLint baseImageLoc = glGetUniformLocation(m_NoFilter->getID(), "texFramebuffer");
+		glUniform1i(baseImageLoc, 2);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetTextureID());
+		
+	}
+
+	
+	
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
 	m_LumaBuffer->Bind();
 	m_EnginePointer->m_Window->Clear();
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//GLenum DrawBuffers[3] = { GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-	//glDrawBuffers(3, DrawBuffers); // "1" is the size of DrawBuffers
 	m_FrameBuffer->Render();
-
+	
 	m_HBlurBuffer->GetShader()->enable();
 	m_HBlurBuffer->GetShader()->setUniform1f("sigmaValue", m_fBloomSigma);
-	m_VBlurBuffer->GetShader()->setUniform1i("kernalSize", m_iBloomKernalSize);
+	m_HBlurBuffer->GetShader()->setUniform1i("kernalSize", m_iBloomKernalSize);
 	m_HBlurBuffer->Bind();
 	m_EnginePointer->m_Window->Clear();
 	m_LumaBuffer->Render();
@@ -72,6 +273,8 @@ void Engine::graphics::PostProcessingStack::Render()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	m_Vignette->Render();
 }
+
+
 
 void Engine::graphics::PostProcessingStack::SetUpUI()
 {
@@ -173,4 +376,11 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 	vignetteSoftTextBox->setFixedSize(Eigen::Vector2i(60, 25));
 	vignetteSoftTextBox->setFontSize(20);
 	vignetteSoftTextBox->setAlignment(nanogui::TextBox::Alignment::Right);
+
+	CheckBox *cbMM = new CheckBox(m_PostProWindow, "MSAA x16",
+		[&](bool state) { m_MS = !m_MS; }
+	);
+	CheckBox *cbSSAO = new CheckBox(m_PostProWindow, "SSAO",
+		[&](bool state) { m_SSAO = !m_SSAO; }
+	);
 }

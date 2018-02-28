@@ -8,7 +8,9 @@ namespace Engine { namespace graphics {
 	class FrameBuffer
 	{
 	public:
-		FrameBuffer(Window* window, int samples, Shader* shader);
+		FrameBuffer() {};
+		FrameBuffer(Window* window, Shader* shader);
+		~FrameBuffer();
 		void Bind();
 		void Unbind();
 		void Render();
@@ -16,6 +18,8 @@ namespace Engine { namespace graphics {
 		GLuint GetTextureID() { return m_Texture; };
 		Shader* GetShader() { return m_ScreenShader; };
 	protected:
+		void CleanUp();
+
 		GLuint m_QuadVAO;
 		GLuint m_QuadVBO;
 

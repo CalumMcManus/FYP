@@ -4,7 +4,7 @@ namespace Engine { namespace graphics {
 	class CombineFilter : public FrameBuffer
 	{
 	public:
-		CombineFilter(Window* window) : FrameBuffer(window, 1, new graphics::Shader("../Assets/Shaders/CombineTexture.vert", "../Assets/Shaders/CombineTexture.frag"))
+		CombineFilter(Window* window) : FrameBuffer(window, new graphics::Shader("../Assets/Shaders/CombineTexture.vert", "../Assets/Shaders/CombineTexture.frag"))
 		{
 
 		};

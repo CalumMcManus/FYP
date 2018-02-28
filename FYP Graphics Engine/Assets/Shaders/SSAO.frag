@@ -51,13 +51,14 @@ void main()
         occlusion += (sampleDepth >= sample.z + bias ? 1.0 : 0.0) * rangeCheck;           
     }
     occlusion = 1.0 - (occlusion / kernelSize);
-    if(fragPos.r < 0.9)
+    if(normal.r < 0.01 && normal.b < 0.01 && normal.g < 0.01)
 	{
+		FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 		
-		FragColor = vec4(occlusion, occlusion, occlusion, 1.0);
 	}
 	else
 	{
-		FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+		FragColor = vec4(occlusion, occlusion, occlusion, 1.0);
+		
 	}
 }

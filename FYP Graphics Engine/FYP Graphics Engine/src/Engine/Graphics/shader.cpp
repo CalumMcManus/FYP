@@ -18,6 +18,8 @@ namespace Engine {
 		Shader::~Shader()
 		{
 			glDeleteProgram(m_ShaderID);
+			m_VertPath = nullptr;
+			m_FragPath = nullptr;
 		}
 
 		void Shader::setUniform1f(const GLchar * name, float value)

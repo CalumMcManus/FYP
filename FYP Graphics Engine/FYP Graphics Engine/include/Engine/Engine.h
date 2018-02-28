@@ -13,6 +13,7 @@ namespace Engine {
 		~GLFWEngine();
 
 		void Run();
+		void Resize();
 		graphics::Window* m_Window;
 	private:
 		

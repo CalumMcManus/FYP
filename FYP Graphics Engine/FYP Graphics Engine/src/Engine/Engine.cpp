@@ -27,3 +27,7 @@ void Engine::GLFWEngine::Run()
 		m_Window->Update();
 	}
 }
+
+void Engine::GLFWEngine::Resize()
+{
+}

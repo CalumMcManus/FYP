@@ -3,8 +3,8 @@ in vec2 Texcoord;
 out vec4 outColor;
 uniform sampler2D texFramebuffer;
 
-uniform float sigmaValue;
-uniform int kernalSize;
+uniform float sigmaValue = 3;
+uniform int kernalSize = 25;
 
 const vec2 resolution = vec2(1280, 720);
 const float radius = 2.0;
