@@ -22,7 +22,7 @@ uniform mat4 projection;
 void main()
 {
     // get input for SSAO algorithm
-    vec3 fragPos = texture(gPosition, TexCoords).xyz;
+    vec3 fragPos = texture(gPosition, TexCoords).rgb;
     vec3 normal = normalize(texture(gNormal, TexCoords).rgb);
     vec3 randomVec = normalize(texture(texNoise, TexCoords * noiseScale).xyz);
     // create TBN change-of-basis matrix: from tangent-space to view-space
@@ -35,7 +35,7 @@ void main()
     {
         // get sample position
         vec3 sample = TBN * samples[i]; // from tangent to view-space
-        sample = fragPos + sample * radius; 
+        sample = fragPos.rgb + sample * radius; 
         
         // project sample position (to sample texture) (to get position on screen/texture)
         vec4 offset = vec4(sample, 1.0);
@@ -51,7 +51,7 @@ void main()
         occlusion += (sampleDepth >= sample.z + bias ? 1.0 : 0.0) * rangeCheck;           
     }
     occlusion = 1.0 - (occlusion / kernelSize);
-    if(normal.r < 0.01 && normal.b < 0.01 && normal.g < 0.01)
+    if(normal.r < 0.01 && normal.g < 0.01 && normal.b < 0.01)
 	{
 		FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 		

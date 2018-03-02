@@ -91,10 +91,14 @@ namespace Engine { namespace graphics {
 	void Window::drawContents()
 	{
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_ONE, GL_ZERO);
+		//glBlendFunc(GL_ONE, GL_ZERO);
+		glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_DEPTH_TEST);
+
 		glDepthMask(GL_TRUE);
 		glDepthFunc(GL_LEQUAL);
+		//glEnable(GL_SAMPLE_ALPHA_TO_ONE);
+
 	}
 
 	bool Window::init()
@@ -106,7 +110,7 @@ namespace Engine { namespace graphics {
 		}
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-		glfwWindowHint(GLFW_SAMPLES, 16);
+		glfwWindowHint(GLFW_SAMPLES, 4);
 		m_Window = glfwCreateWindow(m_Width, m_Height, m_Title, NULL, NULL);
 		if (!m_Window)
 		{

@@ -8,6 +8,7 @@ out vec3 Position;
 out vec3 Normal;
 out vec2 TexCoords;
 
+uniform mat4 Model;
 uniform mat4 ModelViewMatrix;
 uniform mat3 NormalMatrix;
 uniform mat4 ProjectionMatrix;
@@ -15,8 +16,10 @@ uniform mat4 MVP;
 
 void main () {
 
-	Normal = normalize( NormalMatrix * vertex_normal);
+	Normal = NormalMatrix * vertex_normal;
 	Position = vec3( ModelViewMatrix * vec4(vertex_position, 1.0) );
+	
+	//Position = (Model * vec4(vertex_position, 1.0)).xyz;
 	
 	gl_Position = MVP * vec4(vertex_position, 1.0);
 	TexCoords = vertex_uv;

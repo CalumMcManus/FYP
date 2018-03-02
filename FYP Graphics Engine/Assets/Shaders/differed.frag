@@ -2,7 +2,7 @@
 
 layout (location = 0) out vec3 PositionTex;
 layout (location = 1) out vec3 NormalTex;
-layout (location = 2) out vec3 ColorTex;
+layout (location = 2) out vec4 ColorTex;
 
 
 out vec4 fragment_colour;
@@ -20,7 +20,7 @@ void main()
     // also store the per-fragment normals into the gbuffer
     NormalTex = normalize(Normal);
     // and the diffuse per-fragment color
-    ColorTex = texture(texture2D, TexCoords).rgb;
+    ColorTex = vec4(texture(texture2D, TexCoords).rgb, 0.0);
 	vec4 color = texture(texture2D, TexCoords);
 	fragment_colour = color;
 } 

@@ -109,6 +109,7 @@ void Engine::graphics::SkyBox::Draw(glm::mat4 proj, glm::mat4 viewRot) const
 	{
 		glDepthMask(0);
 		glCullFace(GL_FRONT);
+		//glDisable(GL_CULL_FACE);
 
 		GLint textureLocation = glGetUniformLocation(m_Shader->getID(), "cube_texture");
 
@@ -129,6 +130,7 @@ void Engine::graphics::SkyBox::Draw(glm::mat4 proj, glm::mat4 viewRot) const
 		m_VertexArray->unbind();
 		m_Shader->disable();
 		glDepthMask(1);
+		//glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glActiveTexture(GL_TEXTURE0);
 	}

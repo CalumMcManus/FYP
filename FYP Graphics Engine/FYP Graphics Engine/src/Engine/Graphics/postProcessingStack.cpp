@@ -76,7 +76,7 @@ void Engine::graphics::PostProcessingStack::SetUp()
 	delete m_Bloom; m_Bloom = nullptr;
 
 		
-	m_MSBuffer = new graphics::GBuffer(m_EnginePointer->m_Window, 4, m_NoFilter);
+	m_MSBuffer = new graphics::GBuffer(m_EnginePointer->m_Window, m_iSamples, m_NoFilter);
 	m_SSBuffer = new graphics::GBuffer(m_EnginePointer->m_Window, 1, m_NoFilter);
 
 	m_FrameBuffer = new graphics::FrameBuffer(m_EnginePointer->m_Window, m_NoFilter);
@@ -113,18 +113,39 @@ Engine::graphics::PostProcessingStack::~PostProcessingStack()
 void Engine::graphics::PostProcessingStack::Bind()
 {
 	if (m_MS)
+	{
 		m_MSBuffer->Bind();
+	}
 	else
 		m_SSBuffer->Bind();
-	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-	glDrawBuffers(3, drawBuffers);
+	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+	glDrawBuffers(4, drawBuffers);
 	m_EnginePointer->m_Window->Clear();
 }
 
-void Engine::graphics::PostProcessingStack::Render(glm::mat4 P)
+void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, glm::vec3 camPos)
 {
 	if (m_MS)
 	{
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MSBuffer->GetBufferID());
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_SSBuffer->GetBufferID());
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+		glBlitFramebuffer(0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+			0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+			GL_COLOR_BUFFER_BIT,
+			GL_LINEAR);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MSBuffer->GetBufferID());
+		glReadBuffer(GL_COLOR_ATTACHMENT3);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_SSBuffer->GetBufferID());
+		glDrawBuffer(GL_COLOR_ATTACHMENT3);
+		glBlitFramebuffer(0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+			0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+			GL_COLOR_BUFFER_BIT,
+			GL_LINEAR);
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MSBuffer->GetBufferID());
 		glReadBuffer(GL_COLOR_ATTACHMENT2);
@@ -146,14 +167,15 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P)
 
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MSBuffer->GetBufferID());
-		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glReadBuffer(GL_NONE);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_SSBuffer->GetBufferID());
-		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+		glDrawBuffer(GL_NONE);
 		glBlitFramebuffer(0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
 			0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
-			GL_COLOR_BUFFER_BIT,
-			GL_LINEAR);
+			GL_DEPTH_BUFFER_BIT,
+			GL_NEAREST);
 	}
+
 
 	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOFBO);
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
@@ -202,44 +224,125 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P)
 	m_EnginePointer->m_Window->Clear();
 	m_FinalBlueAO->Render();
 	
-	//return;
-	//GLenum drawBuffersTwo[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-	//glDrawBuffers(1, drawBuffersTwo);
 	m_EnginePointer->m_Window->Clear();
 		
-	//Unbind();
-	m_FrameBuffer->Bind();
+	//Lighting Pass
+
+	//m_FrameBuffer->Bind();
 	glBindVertexArray(m_QuadVAO);
 	glDisable(GL_DEPTH_TEST);
-	//m_SSAOShader->enable();
+
 	m_AddSSAO->enable();
-	if (m_SSAO)
+	
+	if (m_MS)
 	{
-		GLint baseImageLoc = glGetUniformLocation(m_AddSSAO->getID(), "texFramebuffer");
+		GLint baseImageLoc = glGetUniformLocation(m_AddSSAO->getID(), "gAlbedo");
 		glUniform1i(baseImageLoc, 2);
 		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetTextureID());
-		GLint ssaoLoc = glGetUniformLocation(m_AddSSAO->getID(), "ssaoTex");
-		glUniform1i(ssaoLoc, 3);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_MSBuffer->GetTextureID());
+
+		GLint posLoc = glGetUniformLocation(m_AddSSAO->getID(), "gPosition");
+		glUniform1i(posLoc, 3);
 		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_MSBuffer->GetPos());
+
+		GLint normLoc = glGetUniformLocation(m_AddSSAO->getID(), "gNormal");
+		glUniform1i(normLoc, 4);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_MSBuffer->GetNormal());
+
+		GLint ssaoLoc = glGetUniformLocation(m_AddSSAO->getID(), "ssaoTex");
+		glUniform1i(ssaoLoc, 5);
+		glActiveTexture(GL_TEXTURE5);
 		glBindTexture(GL_TEXTURE_2D, m_FinalBlueAO->GetTextureID());
-			
+
+		GLint depthLoc = glGetUniformLocation(m_AddSSAO->getID(), "gDepth");
+		glUniform1i(depthLoc, 6);
+		glActiveTexture(GL_TEXTURE6);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_MSBuffer->GetDepth());
+
+		GLint unlitLoc = glGetUniformLocation(m_AddSSAO->getID(), "gAlbedoUnlit");
+		glUniform1i(unlitLoc, 7);
+		glActiveTexture(GL_TEXTURE7);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_MSBuffer->GetUnlit());
+		m_AddSSAO->setUniform1i("Samples", m_iSamples);
 	}
 	else
 	{
-		m_NoFilter->enable();
-		GLint baseImageLoc = glGetUniformLocation(m_NoFilter->getID(), "texFramebuffer");
-		glUniform1i(baseImageLoc, 2);
-		glActiveTexture(GL_TEXTURE2);
+		GLint baseImageLoc = glGetUniformLocation(m_AddSSAO->getID(), "gAlbedoSS");
+		glUniform1i(baseImageLoc, 1);
+		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetTextureID());
-		
+
+		GLint posLoc = glGetUniformLocation(m_AddSSAO->getID(), "gPositionSS");
+		glUniform1i(posLoc, 8);
+		glActiveTexture(GL_TEXTURE8);
+		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetPos());
+		//
+		GLint normLoc = glGetUniformLocation(m_AddSSAO->getID(), "gNormalSS");
+		glUniform1i(normLoc, 9);
+		glActiveTexture(GL_TEXTURE9);
+		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetNormal());
+		//
+		GLint ssaoLoc = glGetUniformLocation(m_AddSSAO->getID(), "ssaoTex");
+		glUniform1i(ssaoLoc, 5);
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, m_FinalBlueAO->GetTextureID());
+		//
+		GLint depthLoc = glGetUniformLocation(m_AddSSAO->getID(), "gDepthSS");
+		glUniform1i(depthLoc, 10);
+		glActiveTexture(GL_TEXTURE10);
+		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetDepth());
+		//
+		GLint unlitLoc = glGetUniformLocation(m_AddSSAO->getID(), "gAlbedoUnlitSS");
+		glUniform1i(unlitLoc, 11);
+		glActiveTexture(GL_TEXTURE11);
+		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetUnlit());
+		m_AddSSAO->setUniform1i("Samples", 0);
 	}
 
 	
+
+	m_AddSSAO->setUniform1i("SSAO", m_SSAO);
+	
+	m_AddSSAO->setUniform3f("viewPos", camPos);
+	m_AddSSAO->setUniformMat4("View", View);
+	glm::vec3 tempColor = glm::vec3(70, 70, 70);
+
+	float constant = 1.0;
+	float linear = 0.7;
+	float quadratic = 1.8;
+	float lightMax = std::fmaxf(std::fmaxf(tempColor.r, tempColor.g), tempColor.b);
+	float radius = (-linear + std::sqrtf(linear * linear - 4 * quadratic * (constant - (256.0 / 5.0) * lightMax))) / (2 * quadratic);
+	std::cout << radius  << " " << glm::length(glm::vec3(0,0,0) - glm::vec3(-2, 0, 0)) << std::endl;
+	m_AddSSAO->setUniform3f("lights[0].Pos", glm::vec3(10, 0, 0));
+	m_AddSSAO->setUniform3f("lights[0].Color", tempColor);
+	m_AddSSAO->setUniform1f("lights[0].Radius", radius);
+	m_AddSSAO->setUniform1f("lights[0].Quadratic", quadratic);
+	m_AddSSAO->setUniform1f("lights[0].Linear", linear);
+	
+	m_AddSSAO->setUniform3f("lights[1].Pos", glm::vec3(-10, 0, 0));
+	m_AddSSAO->setUniform3f("lights[1].Color", tempColor);
+	m_AddSSAO->setUniform1f("lights[1].Radius", radius);
+	m_AddSSAO->setUniform1f("lights[1].Quadratic", quadratic);
+	m_AddSSAO->setUniform1f("lights[1].Linear", linear);
+	
 	
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-
-
+	
+	//glBindFramebuffer(GL_READ_FRAMEBUFFER, m_SSBuffer->GetBufferID());
+	////glReadBuffer(GL_NONE);
+	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	////glDrawBuffer(GL_NONE);
+	//glBlitFramebuffer(0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+	//	0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
+	//	GL_DEPTH_BUFFER_BIT,
+	//	GL_NEAREST);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glClear(GL_DEPTH_BUFFER_BIT);
+	//m_EnginePointer->m_Window->Clear();
+	//m_FrameBuffer->Render();
+	return;
 	m_LumaBuffer->Bind();
 	m_EnginePointer->m_Window->Clear();
 	m_FrameBuffer->Render();
@@ -272,6 +375,9 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P)
 	m_Bloom->Render(m_FrameBuffer->GetTextureID());
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	m_Vignette->Render();
+
+
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 
@@ -377,7 +483,7 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 	vignetteSoftTextBox->setFontSize(20);
 	vignetteSoftTextBox->setAlignment(nanogui::TextBox::Alignment::Right);
 
-	CheckBox *cbMM = new CheckBox(m_PostProWindow, "MSAA x16",
+	CheckBox *cbMM = new CheckBox(m_PostProWindow, "MSAA x4",
 		[&](bool state) { m_MS = !m_MS; }
 	);
 	CheckBox *cbSSAO = new CheckBox(m_PostProWindow, "SSAO",

@@ -132,9 +132,12 @@ void Engine::Scene::Render()
 			if (selected)break;
 		}
 	}
-	m_PostProcessing->Bind();
-	m_SkyBox->Draw(P, V * glm::translate(camPos));
+
 	
+	m_PostProcessing->Bind();
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	m_SkyBox->Draw(P, V * glm::translate(camPos));
+	//glBlendFunc(GL_ONE, GL_ZERO);
 	m_DefaultShader->enable();
 	//m_DefaultShader->setUniformMat4("P", P);
 	//m_DefaultShader->setUniformMat4("V", V );
@@ -162,15 +165,15 @@ void Engine::Scene::Render()
 			glm::mat3 normalMatrix = glm::transpose(glm::inverse(MV));
 			m_DefaultShader->setUniformMat3("NormalMatrix", normalMatrix);
 
-			//m_DefaultShader->setUniformMat4("M", tempTrasnform->getMatrix());
+			m_DefaultShader->setUniformMat4("Model", tempTrasnform->getMatrix());
 		}
 		if (tempTexture)
 			tempTexture->bindTexture(m_DefaultShader);
 		if (tempModel)
 			tempModel->getModel().render();
 	}
-
-	m_PostProcessing->Render(P);
+	m_PostProcessing->Render(P, V, camPos);
+	
 }
 
 void Engine::Scene::AddObject(GameObject * obj)

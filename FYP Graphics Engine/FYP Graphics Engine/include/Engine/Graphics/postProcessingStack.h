@@ -6,6 +6,9 @@
 #include <gtc\type_ptr.hpp>
 #include <random>
 #include <nanogui\nanogui.h>
+
+#include <Engine\Graphics\SkyBox.h>
+#include <gtx\transform.hpp>
 namespace Engine { namespace graphics {
 
 	class PostProcessingStack
@@ -14,7 +17,7 @@ namespace Engine { namespace graphics {
 		PostProcessingStack(GLFWEngine* enginePointer);
 		~PostProcessingStack();
 		void Bind();
-		void Render(glm::mat4 P);
+		void Render(glm::mat4 P, glm::mat4 View, glm::vec3 camPos);
 
 
 	private:
@@ -45,10 +48,13 @@ namespace Engine { namespace graphics {
 		GLFWEngine* m_EnginePointer;
 
 		nanogui::Window* m_PostProWindow;
+
+		graphics::SkyBox* m_SkyBox = new graphics::SkyBox("../Assets/Textures/Cubemap/", "");
 		
 		void SetUpUI();
 
 		//Values
+		int m_iSamples = 4;
 		unsigned int m_iBloomKernalSize = 1;
 		float m_fBloomSigma = 1;
 		float m_fBloomIntensity = 1;
