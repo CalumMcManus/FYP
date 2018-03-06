@@ -13,44 +13,10 @@ Engine::Scene::Scene(GLFWEngine* enginePointer)
 
 	m_PostProcessing = new graphics::PostProcessingStack(enginePointer);
 	
+	m_LightObject = new GameObject();
+	m_LightObject->addComponent(new ModelRenderer("../Assets/Models/Light.obj"));
 
-
-	m_SceneLighting = new nanogui::Window(enginePointer->m_Window, "Scene Lighting");
-	m_SceneLighting->setPosition(Eigen::Vector2i(15, 15));
-	m_SceneLighting->setLayout(new nanogui::GroupLayout());
-
-	new nanogui::Label(m_SceneLighting, "Ambient", "sans-bold", 20);
-	m_SceneLighting->add<nanogui::Label>("Ambient Colour", "sans-bold", 15);
-	nanogui::ColorPicker* picker = new nanogui::ColorPicker(m_SceneLighting, m_SceneAmbient);
-	picker->setCallback([&](nanogui::Color color)
-	{
-		m_SceneAmbient = color;
-	});
-	picker->setHeight(5);
 	
-	m_SceneLighting->add<nanogui::Label>("Ambient Intensity", "sans-bold", 15);
-	nanogui::Widget *panel = new nanogui::Widget(m_SceneLighting);
-	panel->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
-		nanogui::Alignment::Maximum, 0, 20));
-	
-	nanogui::Slider *slider = new nanogui::Slider(panel);
-	slider->setValue(0.5f);
-	slider->setFixedWidth(150);
-	nanogui::TextBox *textBox = new nanogui::TextBox(panel);
-	textBox->setFixedSize(Eigen::Vector2i(60, 25));
-	textBox->setValue("50");
-	textBox->setUnits("%");
-	slider->setCallback([textBox](float value) {
-		textBox->setValue(std::to_string((int)(value * 100)));
-		//m_fAmbientInten = value;
-	});
-	slider->setFinalCallback([&](float value) {
-		cout << "Final slider value: " << (int)(value * 100) << endl;
-		m_fAmbientInten = value;
-	});
-	textBox->setFixedSize(Eigen::Vector2i(60, 25));
-	textBox->setFontSize(20);
-	textBox->setAlignment(nanogui::TextBox::Alignment::Right);
 
 	
 }
@@ -89,20 +55,7 @@ void Engine::Scene::Update(bool orbit)
 
 void Engine::Scene::Render()
 {
-
-	/*glm::dvec2 mousePos;
-	glfwGetCursorPos(&m_EnginePointer->m_Window->getGLFWWindow(), &mousePos.x, &mousePos.y);
-	glm::vec3 test = Physics::RayCast::ViewToWorldSpace(mousePos, P, V, m_EnginePointer->m_Window);
-
-	glm::vec3 test2 = camPos + test * 15.f;
-	glm::vec3 checkVector = glm::vec3(0, 0, 0) - test2;
-	float mag = sqrt(pow(checkVector.x, 2) + pow(checkVector.y, 2) + pow(checkVector.z, 2));
-	glm::vec3 tempColor = glm::vec3(1, 1, 1);
-	if (mag < 5)
-	{
-		tempColor = glm::vec3(1, 0, 0);
-		std::cout << "collide" << std::endl;
-	}*/
+	//Selection
 	if (glfwGetMouseButton(&m_EnginePointer->m_Window->getGLFWWindow(), 0) == GLFW_PRESS && glfwGetMouseButton(&m_EnginePointer->m_Window->getGLFWWindow(), 0) != GLFW_REPEAT)
 	{
 		glm::dvec2 mousePos;
@@ -121,7 +74,7 @@ void Engine::Scene::Render()
 					float mag = sqrt(pow(checkVector.x, 2) + pow(checkVector.y, 2) + pow(checkVector.z, 2));
 					if (mag < 5)
 					{
-						std::cout << "Selected!" << std::endl;
+						std::cout << "Selected Model!" << std::endl;
 						m_TransformWindow->SelectTransform(transform);
 						selected = true;
 						break;
@@ -129,24 +82,32 @@ void Engine::Scene::Render()
 				}
 
 			}
+			for (int l = 0; l < m_PostProcessing->Lights().size(); l++)
+			{
+				graphics::PostProcessingStack::Light* light = m_PostProcessing->Lights()[l];
+				glm::vec3 checkVector = light->Pos - temp[i];
+				float mag = sqrt(pow(checkVector.x, 2) + pow(checkVector.y, 2) + pow(checkVector.z, 2));
+				if (mag < 5)
+				{
+					std::cout << "Selected Light!" << std::endl;
+					m_TransformWindow->SelectLight(light);
+					selected = true;
+					break;
+				}
+
+			}
 			if (selected)break;
 		}
+		if (!selected)
+		{
+			//m_TransformWindow->Clear();
+		}
 	}
-
-	
+	//Render
 	m_PostProcessing->Bind();
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	m_SkyBox->Draw(P, V * glm::translate(camPos));
-	//glBlendFunc(GL_ONE, GL_ZERO);
-	m_DefaultShader->enable();
-	//m_DefaultShader->setUniformMat4("P", P);
-	//m_DefaultShader->setUniformMat4("V", V );
-	//m_DefaultShader->setUniform3f("light_pos", glm::vec3(1, 1, -2));
-	//m_DefaultShader->setUniform3f("light_ambient", glm::vec3(m_SceneAmbient.x(), m_SceneAmbient.y(), m_SceneAmbient.z()));
-	////m_DefaultShader->setUniform3f("light_ambient", tempColor);
-	////m_DefaultShader->setUniform3f("ray_dir", test);
-	//m_DefaultShader->setUniform3f("cam_pos", camPos);
 
+	m_SkyBox->Draw(P, V * glm::translate(camPos));
+	m_DefaultShader->enable();
 
 	m_DefaultShader->setUniformMat4("Projection", P);
 	for (int i = 0; i < v_Objects.size(); i++)
@@ -172,6 +133,28 @@ void Engine::Scene::Render()
 		if (tempModel)
 			tempModel->getModel().render();
 	}
+	//std::cout << m_TransformWindow->IsMouseOver() << std::endl;
+	if (glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_TAB) == GLFW_PRESS)
+	{
+		glDepthMask(0);
+		m_LightShader->enable();
+		for (int l = 0; l < m_PostProcessing->Lights().size(); l++)
+		{
+			glm::mat4 M = glm::translate(m_PostProcessing->Lights()[l]->Pos);
+			glm::mat4 MVP = P * V * M;
+			glm::mat4 MV = V * M;
+			m_LightShader->setUniformMat4("MVP", MVP);
+			m_LightShader->setUniformMat4("ModelViewMatrix", MV);
+			glm::mat3 normalMatrix = glm::transpose(glm::inverse(MV));
+			m_LightShader->setUniformMat3("NormalMatrix", normalMatrix);
+
+			m_LightShader->setUniformMat4("Model", M);
+			m_LightShader->setUniform3f("color", m_PostProcessing->Lights()[l]->Color);
+
+			m_LightObject->getComponent<ModelRenderer>()->getModel().render();
+		}
+		glDepthMask(1);
+	}
 	m_PostProcessing->Render(P, V, camPos);
 	
 }
@@ -179,4 +162,8 @@ void Engine::Scene::Render()
 void Engine::Scene::AddObject(GameObject * obj)
 {
 	v_Objects.push_back(obj);
+}
+
+void Engine::Scene::Save(std::string savePath)
+{
 }

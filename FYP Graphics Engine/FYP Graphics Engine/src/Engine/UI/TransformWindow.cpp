@@ -8,7 +8,8 @@ Engine::UI::TransformWindow::TransformWindow(Engine::GLFWEngine* enginePointer)
 	m_TransformWindow->setLayout(new nanogui::GroupLayout());
 
 	//Position
-	m_TransformWindow->add<nanogui::Label>("Position", "sans-bold", 15);
+	m_PosLable = new nanogui::Label(m_TransformWindow, "Position", "sans-bold", 15);
+	
 	nanogui::Widget *pos = new nanogui::Widget(m_TransformWindow);
 	pos->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
 		nanogui::Alignment::Maximum, 0, 10));
@@ -16,36 +17,49 @@ Engine::UI::TransformWindow::TransformWindow(Engine::GLFWEngine* enginePointer)
 	pos->add<nanogui::Label>("X", "sans-bold", 15);
 	posX = new nanogui::FloatBox<float>(pos, 0);
 	posX->setCallback([&](float value) {
-		if (m_SelectedTransform != nullptr)
+		if (m_SelectedTransform != nullptr && !m_bSelectedLight)
 		{
 			m_SelectedTransform->setPosition(glm::vec3(value, m_SelectedTransform->getPosition().y, m_SelectedTransform->getPosition().z));
 			std::cout << m_SelectedTransform->getPosition().x << " " << m_SelectedTransform->getPosition().y << " " << m_SelectedTransform->getPosition().z << std::endl;
+		}
+		else if (m_SelectedLight != nullptr && m_bSelectedLight)
+		{
+			m_SelectedLight->Pos.x = value;
 		}
 	});
 	posX->setEditable(true);
 	pos->add<nanogui::Label>("Y", "sans-bold", 15);
 	posY = new nanogui::FloatBox<float>(pos, 0);
 	posY->setCallback([&](float value) {
-		if (m_SelectedTransform != nullptr)
+		if (m_SelectedTransform != nullptr && !m_bSelectedLight)
 		{
 			m_SelectedTransform->setPosition(glm::vec3(m_SelectedTransform->getPosition().x, value, m_SelectedTransform->getPosition().z));
 			std::cout << m_SelectedTransform->getPosition().x << " " << m_SelectedTransform->getPosition().y << " " << m_SelectedTransform->getPosition().z << std::endl;
+		}
+		else if (m_SelectedLight != nullptr && m_bSelectedLight)
+		{
+			m_SelectedLight->Pos.y = value;
 		}
 	});
 	posY->setEditable(true);
 	pos->add<nanogui::Label>("Z", "sans-bold", 15);
 	posZ = new nanogui::FloatBox<float>(pos, 0);
 	posZ->setCallback([&](float value) {
-		if (m_SelectedTransform != nullptr)
+		if (m_SelectedTransform != nullptr && !m_bSelectedLight)
 		{
 			m_SelectedTransform->setPosition(glm::vec3(m_SelectedTransform->getPosition().x, m_SelectedTransform->getPosition().y, value));
 			std::cout << m_SelectedTransform->getPosition().x << " " << m_SelectedTransform->getPosition().y << " " << m_SelectedTransform->getPosition().z << std::endl;
+		}
+		else if (m_SelectedLight != nullptr && m_bSelectedLight)
+		{
+			m_SelectedLight->Pos.z = value;
 		}
 	});
 	posZ->setEditable(true);
 
 	//Rotation
-	m_TransformWindow->add<nanogui::Label>("Rotation", "sans-bold", 15);
+	m_RotLable = new nanogui::Label(m_TransformWindow, "Rotation", "sans-bold", 15);
+
 	nanogui::Widget *rot = new nanogui::Widget(m_TransformWindow);
 	rot->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
 		nanogui::Alignment::Maximum, 0, 10));
@@ -53,30 +67,42 @@ Engine::UI::TransformWindow::TransformWindow(Engine::GLFWEngine* enginePointer)
 	rot->add<nanogui::Label>("X", "sans-bold", 15);
 	rotX = new nanogui::FloatBox<float>(rot, 0);
 	rotX->setCallback([&](float value) {
-		if (m_SelectedTransform != nullptr)
+		if (m_SelectedTransform != nullptr && !m_bSelectedLight)
 		{
 			m_SelectedTransform->setRotation(glm::vec3(value, m_SelectedTransform->getRotation().y, m_SelectedTransform->getRotation().z));
 			std::cout << m_SelectedTransform->getRotation().x << " " << m_SelectedTransform->getRotation().y << " " << m_SelectedTransform->getRotation().z << std::endl;
+		}
+		else if (m_SelectedLight != nullptr && m_bSelectedLight)
+		{
+			m_SelectedLight->Color.x = value;
 		}
 	});
 	rotX->setEditable(true);
 	rot->add<nanogui::Label>("Y", "sans-bold", 15);
 	rotY = new nanogui::FloatBox<float>(rot, 0);
 	rotY->setCallback([&](float value) {
-		if (m_SelectedTransform != nullptr)
+		if (m_SelectedTransform != nullptr && !m_bSelectedLight)
 		{
 			m_SelectedTransform->setRotation(glm::vec3(m_SelectedTransform->getRotation().x, value, m_SelectedTransform->getRotation().z));
 			std::cout << m_SelectedTransform->getRotation().x << " " << m_SelectedTransform->getRotation().y << " " << m_SelectedTransform->getRotation().z << std::endl;
+		}
+		else if (m_SelectedLight != nullptr && m_bSelectedLight)
+		{
+			m_SelectedLight->Color.y = value;
 		}
 	});
 	rotY->setEditable(true);
 	rot->add<nanogui::Label>("Z", "sans-bold", 15);
 	rotZ = new nanogui::FloatBox<float>(rot, 0);
 	rotZ->setCallback([&](float value) {
-		if (m_SelectedTransform != nullptr)
+		if (m_SelectedTransform != nullptr && !m_bSelectedLight)
 		{
 			m_SelectedTransform->setRotation(glm::vec3(m_SelectedTransform->getRotation().x, m_SelectedTransform->getRotation().y, value));
 			std::cout << m_SelectedTransform->getRotation().x << " " << m_SelectedTransform->getRotation().y << " " << m_SelectedTransform->getRotation().z << std::endl;
+		}
+		else if (m_SelectedLight != nullptr && m_bSelectedLight)
+		{
+			m_SelectedLight->Color.z = value;
 		}
 	});
 	rotZ->setEditable(true);
@@ -121,11 +147,13 @@ Engine::UI::TransformWindow::TransformWindow(Engine::GLFWEngine* enginePointer)
 
 void Engine::UI::TransformWindow::SelectTransform(Components::Transform * selectedTransform)
 {
+	m_bSelectedLight = false;
 	m_SelectedTransform = selectedTransform;
 	posX->setValue(m_SelectedTransform->getPosition().x);
 	posY->setValue(m_SelectedTransform->getPosition().y);
 	posZ->setValue(m_SelectedTransform->getPosition().z);
 
+	m_RotLable->setCaption("Rotation");
 	rotX->setValue(m_SelectedTransform->getRotation().x);
 	rotY->setValue(m_SelectedTransform->getRotation().y);
 	rotZ->setValue(m_SelectedTransform->getRotation().z);
@@ -133,4 +161,33 @@ void Engine::UI::TransformWindow::SelectTransform(Components::Transform * select
 	scaleX->setValue(m_SelectedTransform->getSize().x);
 	scaleY->setValue(m_SelectedTransform->getSize().y);
 	scaleZ->setValue(m_SelectedTransform->getSize().z);
+}
+
+void Engine::UI::TransformWindow::SelectLight(graphics::PostProcessingStack::Light * selectedLight)
+{
+	m_SelectedLight = selectedLight;
+	m_bSelectedLight = true;
+	posX->setValue(selectedLight->Pos.x);
+	posY->setValue(selectedLight->Pos.y);
+	posZ->setValue(selectedLight->Pos.z);
+	m_RotLable->setCaption("Colour");
+	rotX->setValue(selectedLight->Color.x);
+	rotY->setValue(selectedLight->Color.y);
+	rotZ->setValue(selectedLight->Color.z);
+}
+
+void Engine::UI::TransformWindow::Clear()
+{
+	m_SelectedTransform = nullptr;
+	posX->setValue(0);
+	posY->setValue(0);
+	posZ->setValue(0);
+
+	rotX->setValue(0);
+	rotY->setValue(0);
+	rotZ->setValue(0);
+
+	scaleX->setValue(0);
+	scaleY->setValue(0);
+	scaleZ->setValue(0);
 }

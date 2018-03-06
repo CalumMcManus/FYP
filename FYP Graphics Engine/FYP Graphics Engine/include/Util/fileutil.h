@@ -48,7 +48,7 @@ namespace Engine {
 		}
 
 		//Opens windows file explorer to browse files
-		static std::string BrowseFiles()
+		static std::string BrowseFiles(const char* name)
 		{
 			const int BUFSIZE = 1024;
 			char buffer[BUFSIZE] = { 0 };
@@ -57,7 +57,7 @@ namespace Engine {
 			//ofns.lpstrFilter = "OBJ Files (*.obj)\0*.obj\0";
 			ofns.lpstrFile = buffer;
 			ofns.nMaxFile = BUFSIZE;
-			ofns.lpstrTitle = "Select File";
+			ofns.lpstrTitle = name;
 			ofns.Flags = OFN_NOCHANGEDIR;
 			GetOpenFileName(&ofns);
 			std::string pathValue(buffer);

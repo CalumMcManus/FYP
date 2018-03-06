@@ -28,10 +28,15 @@ namespace Engine
 
 		void AddObject(GameObject* obj);
 
+		void Save(std::string savePath);
+
 	private:
 		graphics::Shader* m_DefaultShader = new graphics::Shader("../Assets/Shaders/differed.vert", "../Assets/Shaders/differed.frag");
+		graphics::Shader* m_LightShader = new graphics::Shader("../Assets/Shaders/light.vert", "../Assets/Shaders/light.frag");
 		graphics::SkyBox* m_SkyBox = new graphics::SkyBox("../Assets/Textures/Cubemap/", "");
 		std::vector<GameObject*> v_Objects;
+
+		GameObject* m_LightObject;
 
 		//TODO:: Add to a camera class
 		glm::mat4 P = glm::perspective(1.16937f, (float)1280 / (float)720, 0.1f, 150.f);//1.16937 = 67 degrees
@@ -57,13 +62,7 @@ namespace Engine
 		float fYAxis = 0;
 		glm::vec3 camPos = glm::vec3(0, 6, -15);
 
-		//NanoGUI
-
-		nanogui::Color m_SceneAmbient = nanogui::Color(1, 1, 1, 1);
-		float m_fAmbientInten = 0;
-
-		//Window Test
-		nanogui::Window* m_SceneLighting;
+		
 
 	};
 }

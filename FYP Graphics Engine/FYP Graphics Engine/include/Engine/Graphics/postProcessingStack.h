@@ -13,14 +13,33 @@ namespace Engine { namespace graphics {
 
 	class PostProcessingStack
 	{
+	
 	public:
+		struct Light
+		{
+			glm::vec3 Pos;
+			glm::vec3 Color;
+			float Radius;
+			float Intencity;
+			Light(glm::vec3 pos, glm::vec3 color, float radius, float inten)
+			{
+				Pos = pos;
+				Color = color;
+				Radius = radius;
+				Intencity = inten;
+			}
+
+		};
 		PostProcessingStack(GLFWEngine* enginePointer);
 		~PostProcessingStack();
 		void Bind();
 		void Render(glm::mat4 P, glm::mat4 View, glm::vec3 camPos);
 
+		std::vector<Light*> Lights() { return m_Lights; };
 
 	private:
+		std::vector<Light*> m_Lights;
+
 		void SetUp();
 		bool m_MS = false;
 		bool m_SSAO = false;
@@ -97,6 +116,12 @@ namespace Engine { namespace graphics {
 		{
 			return a + f * (b - a);
 		}
+
+		//LightingNanoGUI
+
+		nanogui::Color m_SceneAmbient = nanogui::Color(255, 255, 255, 255);
+		float m_fAmbientInten = 0.5f;
+		nanogui::Window* m_SceneLighting;
 	};
 
 } }

@@ -12,7 +12,7 @@ Engine::Project::Project(GLFWEngine* enginePointer)
 	{
 		AddModel();
 	}
-	)->setTooltip("Create a new project at directory.");
+	)->setTooltip("Add model to the scene.");
 	enginePointer->m_Window->setVisible(true);
 	enginePointer->m_Window->performLayout();
 	windowGUI->center();
@@ -45,8 +45,8 @@ bool Engine::Project::SetUpProjectDirectories()
 void Engine::Project::AddModel()
 {
 	GameObject* tempObj = new GameObject();
-	tempObj->addComponent(new ModelRenderer(FileUtils::BrowseFiles().c_str()));
-	tempObj->addComponent(new Texture(FileUtils::BrowseFiles().c_str()));
+	tempObj->addComponent(new ModelRenderer(FileUtils::BrowseFiles("Select Model").c_str()));
+	tempObj->addComponent(new Texture(FileUtils::BrowseFiles("Select Albedo Texture").c_str()));
 	tempObj->addComponent(new Transform(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
 	m_Scene->AddObject(tempObj);
 }
@@ -55,6 +55,11 @@ void Engine::Project::Update()
 {
 	m_Scene->Update(m_bOrbit);
 	m_Scene->Render();
+}
+
+void Engine::Project::Save()
+{
+	m_Scene->Save(m_Directory);
 }
 
 bool Engine::Project::CreateConfigFile(std::string path)

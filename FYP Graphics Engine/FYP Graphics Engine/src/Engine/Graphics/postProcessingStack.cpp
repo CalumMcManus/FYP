@@ -3,6 +3,8 @@
 Engine::graphics::PostProcessingStack::PostProcessingStack(GLFWEngine * enginePointer)
 {
 	m_EnginePointer = enginePointer;
+	m_Lights.push_back(new Light(glm::vec3(10, 0, 0), glm::vec3(1, 0, 1), 10.0f, 3.0f));
+	m_Lights.push_back(new Light(glm::vec3(-10, 0, 0), glm::vec3(0, 1, 1), 10.0f, 3.0f));
 	//Setup Quad VAO
 
 	glGenBuffers(1, &m_QuadVBO);
@@ -228,7 +230,7 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 		
 	//Lighting Pass
 
-	//m_FrameBuffer->Bind();
+	m_FrameBuffer->Bind();
 	glBindVertexArray(m_QuadVAO);
 	glDisable(GL_DEPTH_TEST);
 
@@ -307,42 +309,20 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	
 	m_AddSSAO->setUniform3f("viewPos", camPos);
 	m_AddSSAO->setUniformMat4("View", View);
-	glm::vec3 tempColor = glm::vec3(70, 70, 70);
+	m_AddSSAO->setUniform3f("AmbientColor", glm::vec3(m_SceneAmbient.x(), m_SceneAmbient.y(), m_SceneAmbient.z()));
+	m_AddSSAO->setUniform1f("AmbientInten", m_fAmbientInten);
 
-	float constant = 1.0;
-	float linear = 0.7;
-	float quadratic = 1.8;
-	float lightMax = std::fmaxf(std::fmaxf(tempColor.r, tempColor.g), tempColor.b);
-	float radius = (-linear + std::sqrtf(linear * linear - 4 * quadratic * (constant - (256.0 / 5.0) * lightMax))) / (2 * quadratic);
-	std::cout << radius  << " " << glm::length(glm::vec3(0,0,0) - glm::vec3(-2, 0, 0)) << std::endl;
-	m_AddSSAO->setUniform3f("lights[0].Pos", glm::vec3(10, 0, 0));
-	m_AddSSAO->setUniform3f("lights[0].Color", tempColor);
-	m_AddSSAO->setUniform1f("lights[0].Radius", radius);
-	m_AddSSAO->setUniform1f("lights[0].Quadratic", quadratic);
-	m_AddSSAO->setUniform1f("lights[0].Linear", linear);
-	
-	m_AddSSAO->setUniform3f("lights[1].Pos", glm::vec3(-10, 0, 0));
-	m_AddSSAO->setUniform3f("lights[1].Color", tempColor);
-	m_AddSSAO->setUniform1f("lights[1].Radius", radius);
-	m_AddSSAO->setUniform1f("lights[1].Quadratic", quadratic);
-	m_AddSSAO->setUniform1f("lights[1].Linear", linear);
-	
+	for (int i = 0; i < m_Lights.size(); i++)
+	{
+		std::string light = "lights[" + std::to_string(i) + "]";
+		m_AddSSAO->setUniform3f((light + ".Pos").c_str() , m_Lights[i]->Pos);
+		m_AddSSAO->setUniform3f((light + ".Color").c_str(), m_Lights[i]->Color);
+		m_AddSSAO->setUniform1f((light + ".Radius").c_str(), m_Lights[i]->Radius);
+		m_AddSSAO->setUniform1f((light + ".Inten").c_str(), m_Lights[i]->Intencity);
+	}
 	
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	
-	//glBindFramebuffer(GL_READ_FRAMEBUFFER, m_SSBuffer->GetBufferID());
-	////glReadBuffer(GL_NONE);
-	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	////glDrawBuffer(GL_NONE);
-	//glBlitFramebuffer(0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
-	//	0, 0, m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight(),
-	//	GL_DEPTH_BUFFER_BIT,
-	//	GL_NEAREST);
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//glClear(GL_DEPTH_BUFFER_BIT);
-	//m_EnginePointer->m_Window->Clear();
-	//m_FrameBuffer->Render();
-	return;
 	m_LumaBuffer->Bind();
 	m_EnginePointer->m_Window->Clear();
 	m_FrameBuffer->Render();
@@ -384,6 +364,46 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 
 void Engine::graphics::PostProcessingStack::SetUpUI()
 {
+	//Lighting
+	m_SceneLighting = new nanogui::Window(m_EnginePointer->m_Window, "Scene Lighting");
+	m_SceneLighting->setPosition(Eigen::Vector2i(15, 15));
+	m_SceneLighting->setLayout(new nanogui::GroupLayout());
+
+	new nanogui::Label(m_SceneLighting, "Ambient", "sans-bold", 20);
+	m_SceneLighting->add<nanogui::Label>("Ambient Colour", "sans-bold", 15);
+	nanogui::ColorPicker* picker = new nanogui::ColorPicker(m_SceneLighting, m_SceneAmbient);
+	picker->setCallback([&](nanogui::Color color)
+	{
+		m_SceneAmbient = color;
+	});
+	picker->setHeight(5);
+
+	m_SceneLighting->add<nanogui::Label>("Ambient Intensity", "sans-bold", 15);
+	nanogui::Widget *panelLight = new nanogui::Widget(m_SceneLighting);
+	panelLight->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
+		nanogui::Alignment::Maximum, 0, 20));
+
+	nanogui::Slider *slider = new nanogui::Slider(panelLight);
+	slider->setValue(0.5f);
+	slider->setFixedWidth(150);
+	nanogui::TextBox *textBox = new nanogui::TextBox(panelLight);
+	textBox->setFixedSize(Eigen::Vector2i(60, 25));
+	textBox->setValue("50");
+	textBox->setUnits("%");
+	slider->setCallback([textBox](float value) {
+		textBox->setValue(std::to_string((int)(value * 100)));
+		//m_fAmbientInten = value;
+	});
+	slider->setFinalCallback([&](float value) {
+		std::cout << "Final slider value: " << (int)(value * 100) << std::endl;
+		m_fAmbientInten = value;
+	});
+	textBox->setFixedSize(Eigen::Vector2i(60, 25));
+	textBox->setFontSize(20);
+	textBox->setAlignment(nanogui::TextBox::Alignment::Right);
+
+	//Post Pro
+
 	m_PostProWindow = new nanogui::Window(m_EnginePointer->m_Window, "Post Processing");
 	m_PostProWindow->setPosition(Eigen::Vector2i(m_EnginePointer->m_Window->getWidth()- 200, 15));
 	m_PostProWindow->setLayout(new nanogui::GroupLayout());
@@ -394,23 +414,23 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 	panel->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
 		nanogui::Alignment::Maximum, 0, 20));
 
-	nanogui::Slider *slider = new nanogui::Slider(panel);
-	slider->setValue(0.5f);
-	slider->setFixedWidth(150);
-	nanogui::TextBox *textBox = new nanogui::TextBox(panel);
-	textBox->setFixedSize(Eigen::Vector2i(60, 25));
-	textBox->setValue("50");
-	textBox->setUnits("%");
-	slider->setCallback([&, textBox](float value) {
-		textBox->setValue(std::to_string((int)(value * 100)));
+	nanogui::Slider *sliderBloom = new nanogui::Slider(panel);
+	sliderBloom->setValue(0.5f);
+	sliderBloom->setFixedWidth(150);
+	nanogui::TextBox *textBoxBloom = new nanogui::TextBox(panel);
+	textBoxBloom->setFixedSize(Eigen::Vector2i(60, 25));
+	textBoxBloom->setValue("50");
+	textBoxBloom->setUnits("%");
+	sliderBloom->setCallback([&, textBoxBloom](float value) {
+		textBoxBloom->setValue(std::to_string((int)(value * 100)));
 		m_fBloomIntensity = value*2;
 	});
-	slider->setFinalCallback([&](float value) {
+	sliderBloom->setFinalCallback([&](float value) {
 		m_fBloomIntensity = value*2;
 	});
-	textBox->setFixedSize(Eigen::Vector2i(60, 25));
-	textBox->setFontSize(20);
-	textBox->setAlignment(nanogui::TextBox::Alignment::Right);
+	textBoxBloom->setFixedSize(Eigen::Vector2i(60, 25));
+	textBoxBloom->setFontSize(20);
+	textBoxBloom->setAlignment(nanogui::TextBox::Alignment::Right);
 
 	//Bloom Sigma
 	nanogui::Widget *sigmaValue = new nanogui::Widget(m_PostProWindow);

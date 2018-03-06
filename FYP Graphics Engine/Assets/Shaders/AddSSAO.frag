@@ -20,8 +20,7 @@ uniform mat4 View;
 struct Light {
 	vec3 Pos;
 	vec3 Color;
-	float Linear;
-    float Quadratic;
+	float Inten;
 	float Radius;
 };
 
@@ -32,6 +31,9 @@ uniform vec3 viewPos;
 uniform bool SSAO;
 uniform int Samples;
 
+uniform vec3 AmbientColor;
+uniform float AmbientInten;
+
 vec3 MSAA()
 {
 	ivec2 texSize = textureSize(gAlbedo);
@@ -40,7 +42,7 @@ vec3 MSAA()
 	
 	vec3 lighting;
 	
-	for (int i = 0; i < Samples; i++)
+	for (int i = 0; i < Samples; ++i)
 	{
 		vec3 color = texelFetch(gAlbedo, texCoord, i).rgb;
 		vec3 norm = texelFetch(gNormal, texCoord, i).rgb;
@@ -49,17 +51,17 @@ vec3 MSAA()
 		vec3 colorUnlit = texelFetch(gAlbedoUnlit, texCoord, i).rgb;
 		if(depth.r >= 1)
 		{
-			lighting += colorUnlit;
+			lighting += colorUnlit/(Samples);
 		}else
 		{
 		
 			if(SSAO)
 			{
-				lighting += vec3(0.3 * color.rgb * ssaoValue); // hard-coded ambient component
+				lighting += vec3(AmbientInten * (color.rgb*AmbientColor) * ssaoValue)/(Samples);
 			}
 			else
 			{
-				lighting += vec3(0.3 * color.rgb); // hard-coded ambient component
+				lighting += vec3(AmbientInten * (color.rgb*AmbientColor))/(Samples);
 			}
 			vec3 posWorld = pos.rgb;
 
@@ -73,18 +75,16 @@ vec3 MSAA()
 				float distance = length(lightPos.xyz - posWorld);
 				if(distance < lights[i].Radius)
 				{
-					// diffuse
 					vec3 lightDir = normalize(lightPos.xyz - posWorld);
 					vec3 diffuse = max(dot(norm.rgb, lightDir), 0.0) * color.rgb * lights[i].Color;
-						
-					float attenuation = 1.0 / (1.0 + lights[i].Linear * distance + lights[i].Quadratic * distance * distance);
-					lighting += (diffuse*attenuation);
+					vec3 lightRange = (lightPos.xyz - posWorld)/lights[i].Radius;
+					float attenuation = max(0.0, 1.0 - dot(lightRange, lightRange));
+					lighting += ((diffuse*lights[i].Inten)*attenuation)/(Samples+1);
 				}
 			}
 		}
-		
 	}
-	lighting /= float(Samples);
+	//lighting /= float(Samples+1);
 	return lighting;
 }
 
@@ -107,11 +107,11 @@ vec3 SS()
 	
 		if(SSAO)
 		{
-			lighting = vec3(0.3 * color.rgb * ssaoValue); // hard-coded ambient component
+			lighting = vec3(AmbientInten * (color.rgb*AmbientColor) * ssaoValue); // hard-coded ambient component
 		}
 		else
 		{
-			lighting = vec3(0.3 * color.rgb); // hard-coded ambient component
+			lighting = vec3(AmbientInten * (color.rgb*AmbientColor)); // hard-coded ambient component
 		}
 		vec3 posWorld = pos.rgb;
 
@@ -128,9 +128,9 @@ vec3 SS()
 				// diffuse
 				vec3 lightDir = normalize(lightPos.xyz - posWorld);
 				vec3 diffuse = max(dot(norm.rgb, lightDir), 0.0) * color.rgb * lights[i].Color;
-					
-				float attenuation = 1.0 / (1.0 + lights[i].Linear * distance + lights[i].Quadratic * distance * distance);
-				lighting += (diffuse*attenuation);
+				vec3 lightRange = (lightPos.xyz - posWorld)/lights[i].Radius;
+				float attenuation = max(0.0, 1.0 - dot(lightRange, lightRange));
+				lighting += ((diffuse*lights[i].Inten)*attenuation);
 			}
 		}
 	

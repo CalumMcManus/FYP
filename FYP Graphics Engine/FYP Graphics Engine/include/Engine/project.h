@@ -16,6 +16,7 @@ namespace Engine
 		void AddModel();
 
 		void Update();
+		void Save();
 	private:
 		std::string m_Directory;
 		bool CreateConfigFile(std::string path);
