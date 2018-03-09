@@ -319,6 +319,9 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 		m_AddSSAO->setUniform3f((light + ".Color").c_str(), m_Lights[i]->Color);
 		m_AddSSAO->setUniform1f((light + ".Radius").c_str(), m_Lights[i]->Radius);
 		m_AddSSAO->setUniform1f((light + ".Inten").c_str(), m_Lights[i]->Intencity);
+
+		m_AddSSAO->setUniform1f((light + ".Angle").c_str(), 75);
+		m_AddSSAO->setUniform3f((light + ".Direction").c_str(), glm::vec3(0, 1 ,0));
 	}
 	
 	glDrawArrays(GL_TRIANGLES, 0, 6);

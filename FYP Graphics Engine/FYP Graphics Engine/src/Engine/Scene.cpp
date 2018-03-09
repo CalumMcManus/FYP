@@ -62,40 +62,47 @@ void Engine::Scene::Render()
 		glfwGetCursorPos(&m_EnginePointer->m_Window->getGLFWWindow(), &mousePos.x, &mousePos.y);
 		std::vector<glm::vec3> temp = Physics::RayCast::CastRay(camPos, mousePos, 20, P, V, m_EnginePointer->m_Window);
 		bool selected = false;
+		
 		for (int i = 0; i < temp.size(); i++)
 		{
 			//std::cout << temp[i].x << " " << temp[i].y << " " << temp[i].z << std::endl;
-			for (int j = 0; j < v_Objects.size(); j++)
+			if (!(glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_TAB) == GLFW_PRESS))
 			{
-				Transform* transform = v_Objects[j]->getComponent<Transform>();
-				if (transform != nullptr)
+				for (int j = 0; j < v_Objects.size(); j++)
 				{
-					glm::vec3 checkVector = transform->getPosition() - temp[i];
+					Transform* transform = v_Objects[j]->getComponent<Transform>();
+					if (transform != nullptr)
+					{
+						glm::vec3 checkVector = transform->getPosition() - temp[i];
+						float mag = sqrt(pow(checkVector.x, 2) + pow(checkVector.y, 2) + pow(checkVector.z, 2));
+						if (mag < 2)
+						{
+							std::cout << "Selected Model!" << std::endl;
+							m_TransformWindow->SelectTransform(transform);
+							selected = true;
+							break;
+						}
+					}
+
+				}
+			}
+			else
+			{
+				for (int l = 0; l < m_PostProcessing->Lights().size(); l++)
+				{
+					graphics::PostProcessingStack::Light* light = m_PostProcessing->Lights()[l];
+					glm::vec3 checkVector = light->Pos - temp[i];
 					float mag = sqrt(pow(checkVector.x, 2) + pow(checkVector.y, 2) + pow(checkVector.z, 2));
 					if (mag < 2)
 					{
-						std::cout << "Selected Model!" << std::endl;
-						m_TransformWindow->SelectTransform(transform);
+						std::cout << "Selected Light!" << std::endl;
+						m_TransformWindow->SelectLight(light);
+						m_PostProcessing->SetSelectedLight(light);
 						selected = true;
 						break;
 					}
-				}
 
-			}
-			for (int l = 0; l < m_PostProcessing->Lights().size(); l++)
-			{
-				graphics::PostProcessingStack::Light* light = m_PostProcessing->Lights()[l];
-				glm::vec3 checkVector = light->Pos - temp[i];
-				float mag = sqrt(pow(checkVector.x, 2) + pow(checkVector.y, 2) + pow(checkVector.z, 2));
-				if (mag < 2)
-				{
-					std::cout << "Selected Light!" << std::endl;
-					m_TransformWindow->SelectLight(light);
-					m_PostProcessing->SetSelectedLight(light);
-					selected = true;
-					break;
 				}
-
 			}
 			if (selected)break;
 		}

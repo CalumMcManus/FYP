@@ -22,6 +22,8 @@ struct Light {
 	vec3 Color;
 	float Inten;
 	float Radius;
+	float Angle;
+	vec3 Direction;
 };
 
 const int MAX_LIGHTS = 32;
@@ -79,12 +81,25 @@ vec3 MSAA()
 					vec3 diffuse = max(dot(norm.rgb, lightDir), 0.0) * color.rgb * lights[i].Color;
 					vec3 lightRange = (lightPos.xyz - posWorld)/lights[i].Radius;
 					float attenuation = max(0.0, 1.0 - dot(lightRange, lightRange));
-					lighting += ((diffuse*lights[i].Inten)*attenuation)/(Samples+1);
+					
+					
+					vec3 normSpotDir = normalize(lights[i].Direction);
+					
+					float difAngle = degrees(acos(dot(normSpotDir, lightDir)));
+					
+					
+					if(difAngle > lights[i].Angle)
+					{
+						diffuse = vec3(0, 0, 0); 
+					}
+					
+					
+					lighting += ((diffuse*lights[i].Inten)*attenuation)/(Samples+1.5);
 				}
 			}
 		}
 	}
-	//lighting /= float(Samples+1);
+
 	return lighting;
 }
 
@@ -141,12 +156,13 @@ void main()
 {
 	vec3 color;
 	if(Samples > 1)
+	{
 		color = MSAA();
+	}
 	else
+	{
 		color = SS();
+	}
 
-	outColor = vec4(color, 1.0);
-	
-
-	
+	outColor = vec4(color, 1.0);	
 }
