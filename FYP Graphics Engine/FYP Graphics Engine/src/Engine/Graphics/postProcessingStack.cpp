@@ -402,6 +402,24 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 	textBox->setFontSize(20);
 	textBox->setAlignment(nanogui::TextBox::Alignment::Right);
 
+	nanogui::Button *addLight = new nanogui::Button(m_SceneLighting, "Add Light");
+	addLight->setCallback([&]
+	{
+		m_Lights.push_back(new Light(glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), 5, 3));
+	});
+
+	nanogui::Button *deleteLight = new nanogui::Button(m_SceneLighting, "Remove Light");
+	deleteLight->setCallback([&]
+	{
+		for (int i = 0; i < m_Lights.size(); i++)
+		{
+			if (m_SelectedLight == m_Lights[i])
+			{
+				m_Lights.erase(m_Lights.begin() + i);
+			}
+		}
+	});
+
 	//Post Pro
 
 	m_PostProWindow = new nanogui::Window(m_EnginePointer->m_Window, "Post Processing");

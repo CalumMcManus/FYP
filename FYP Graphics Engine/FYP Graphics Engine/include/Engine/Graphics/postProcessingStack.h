@@ -37,9 +37,10 @@ namespace Engine { namespace graphics {
 
 		std::vector<Light*> Lights() { return m_Lights; };
 
+		void SetSelectedLight(Light* light) { m_SelectedLight = light; }
 	private:
 		std::vector<Light*> m_Lights;
-
+		Light *m_SelectedLight;
 		void SetUp();
 		bool m_MS = false;
 		bool m_SSAO = false;

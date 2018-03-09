@@ -72,7 +72,7 @@ void Engine::Scene::Render()
 				{
 					glm::vec3 checkVector = transform->getPosition() - temp[i];
 					float mag = sqrt(pow(checkVector.x, 2) + pow(checkVector.y, 2) + pow(checkVector.z, 2));
-					if (mag < 5)
+					if (mag < 2)
 					{
 						std::cout << "Selected Model!" << std::endl;
 						m_TransformWindow->SelectTransform(transform);
@@ -87,10 +87,11 @@ void Engine::Scene::Render()
 				graphics::PostProcessingStack::Light* light = m_PostProcessing->Lights()[l];
 				glm::vec3 checkVector = light->Pos - temp[i];
 				float mag = sqrt(pow(checkVector.x, 2) + pow(checkVector.y, 2) + pow(checkVector.z, 2));
-				if (mag < 5)
+				if (mag < 2)
 				{
 					std::cout << "Selected Light!" << std::endl;
 					m_TransformWindow->SelectLight(light);
+					m_PostProcessing->SetSelectedLight(light);
 					selected = true;
 					break;
 				}
