@@ -79,22 +79,31 @@ vec3 MSAA()
 				{
 					vec3 lightDir = normalize(lightPos.xyz - posWorld);
 					vec3 diffuse = max(dot(norm.rgb, lightDir), 0.0) * color.rgb * lights[i].Color;
-					vec3 lightRange = (lightPos.xyz - posWorld)/lights[i].Radius;
-					float attenuation = max(0.0, 1.0 - dot(lightRange, lightRange));
+					vec3 lightRange = (lightPos.xyz - posWorld)/lights[i].Radius;;
+					float attenuation;
 					
-					
-					vec3 normSpotDir = normalize(lights[i].Direction);
-					
-					float difAngle = degrees(acos(dot(normSpotDir, lightDir)));
-					
-					
-					if(difAngle > lights[i].Angle)
+					if(lights[i].Angle >= 180)
 					{
-						diffuse = vec3(0, 0, 0); 
+						
+						attenuation = max(0.0, 1.0 - dot(lightRange, lightRange));
+						lighting += ((diffuse*lights[i].Inten)*attenuation)/(Samples+1.5);
 					}
-					
-					
-					lighting += ((diffuse*lights[i].Inten)*attenuation)/(Samples+1.5);
+					else
+					{
+						vec3 normSpotDir = normalize(lights[i].Direction);
+												
+						float difAngle = degrees(acos(dot(normSpotDir, lightDir)));
+						float feather = difAngle/(lights[i].Angle/2);
+						attenuation = max(0.0, 1.0 - dot(lightRange, lightRange));
+						attenuation =  attenuation * (1 - feather);
+						if(difAngle > lights[i].Angle/2)
+						{
+							attenuation = 0;
+						}
+						
+						
+						lighting += ((diffuse*lights[i].Inten)*attenuation)/(Samples+1.5);
+					}
 				}
 			}
 		}
@@ -145,7 +154,24 @@ vec3 SS()
 				vec3 diffuse = max(dot(norm.rgb, lightDir), 0.0) * color.rgb * lights[i].Color;
 				vec3 lightRange = (lightPos.xyz - posWorld)/lights[i].Radius;
 				float attenuation = max(0.0, 1.0 - dot(lightRange, lightRange));
-				lighting += ((diffuse*lights[i].Inten)*attenuation);
+				if(lights[i].Angle >= 180)
+				{
+					lighting += ((diffuse*lights[i].Inten)*attenuation);
+				}
+				else{
+					vec3 normSpotDir = normalize(lights[i].Direction);
+													
+					float difAngle = degrees(acos(dot(normSpotDir, lightDir)));
+					float feather = difAngle/(lights[i].Angle/2);
+					attenuation = max(0.0, 1.0 - dot(lightRange, lightRange));
+					attenuation =  attenuation * (1 - feather);
+					if(difAngle > lights[i].Angle/2)
+					{
+						attenuation = 0;
+					}
+					
+					lighting += ((diffuse*lights[i].Inten)*attenuation);
+				}
 			}
 		}
 	

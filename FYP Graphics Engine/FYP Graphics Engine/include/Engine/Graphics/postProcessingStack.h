@@ -9,6 +9,13 @@
 
 #include <Engine\Graphics\SkyBox.h>
 #include <gtx\transform.hpp>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <gtx\quaternion.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtx/transform.hpp>
+#include <gtx/euler_angles.hpp>
+#include <glm.hpp>
 namespace Engine { namespace graphics {
 
 	class PostProcessingStack
@@ -19,11 +26,15 @@ namespace Engine { namespace graphics {
 		{
 			glm::vec3 Pos;
 			glm::vec3 Color;
+			glm::vec3 Rot;
+			float Angle;
 			float Radius;
 			float Intencity;
 			Light(glm::vec3 pos, glm::vec3 color, float radius, float inten)
 			{
 				Pos = pos;
+				Rot = glm::vec3(0, 0, 0);
+				Angle = 180; //Point Light
 				Color = color;
 				Radius = radius;
 				Intencity = inten;

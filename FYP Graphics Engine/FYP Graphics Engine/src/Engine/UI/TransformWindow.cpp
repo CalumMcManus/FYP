@@ -74,7 +74,7 @@ Engine::UI::TransformWindow::TransformWindow(Engine::GLFWEngine* enginePointer)
 		}
 		else if (m_SelectedLight != nullptr && m_bSelectedLight)
 		{
-			m_SelectedLight->Color.x = value;
+			m_SelectedLight->Rot.x = value;
 		}
 	});
 	rotX->setEditable(true);
@@ -88,7 +88,7 @@ Engine::UI::TransformWindow::TransformWindow(Engine::GLFWEngine* enginePointer)
 		}
 		else if (m_SelectedLight != nullptr && m_bSelectedLight)
 		{
-			m_SelectedLight->Color.y = value;
+			m_SelectedLight->Rot.y = value;
 		}
 	});
 	rotY->setEditable(true);
@@ -102,44 +102,59 @@ Engine::UI::TransformWindow::TransformWindow(Engine::GLFWEngine* enginePointer)
 		}
 		else if (m_SelectedLight != nullptr && m_bSelectedLight)
 		{
-			m_SelectedLight->Color.z = value;
+			m_SelectedLight->Rot.z = value;
 		}
 	});
 	rotZ->setEditable(true);
 
 	//Scale
-	m_TransformWindow->add<nanogui::Label>("Scale", "sans-bold", 15);
+	m_ScaleLable = new nanogui::Label(m_TransformWindow, "Scale", "sans-bold", 15);
+
 	nanogui::Widget *scale = new nanogui::Widget(m_TransformWindow);
 	scale->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
 		nanogui::Alignment::Maximum, 0, 10));
 	scale->setSize(nanogui::Vector2i(100, 20));
-	scale->add<nanogui::Label>("X", "sans-bold", 15);
+
+	m_ScaleXLable = new nanogui::Label(scale, "X", "sans-bold", 15);
+
 	scaleX = new nanogui::FloatBox<float>(scale, 0.f);
 	scaleX->setCallback([&](float value) {
-		if (m_SelectedTransform != nullptr)
+		if (m_SelectedTransform != nullptr && !m_bSelectedLight)
 		{
 			m_SelectedTransform->setSize(glm::vec3(value, m_SelectedTransform->getSize().y, m_SelectedTransform->getSize().z));
 			std::cout <<  "New Scale: " << m_SelectedTransform->getSize().x << " " << m_SelectedTransform->getSize().y << " " << m_SelectedTransform->getSize().z << std::endl;
 		}
+		else if (m_SelectedLight != nullptr && m_bSelectedLight)
+		{
+			m_SelectedLight->Radius = value;
+		}
 	});
 	scaleX->setEditable(true);
-	scale->add<nanogui::Label>("Y", "sans-bold", 15);
+	m_ScaleYLable = new nanogui::Label(scale, "Y", "sans-bold", 15);
 	scaleY = new nanogui::FloatBox<float>(scale, 0.f);
 	scaleY->setCallback([&](float value) {
-		if (m_SelectedTransform != nullptr)
+		if (m_SelectedTransform != nullptr && !m_bSelectedLight)
 		{
 			m_SelectedTransform->setSize(glm::vec3(m_SelectedTransform->getSize().x, value, m_SelectedTransform->getSize().z));
 			std::cout << m_SelectedTransform->getSize().x << " " << m_SelectedTransform->getSize().y << " " << m_SelectedTransform->getSize().z << std::endl;
 		}
+		else if (m_SelectedLight != nullptr && m_bSelectedLight)
+		{
+			m_SelectedLight->Angle = value;
+		}
 	});
 	scaleY->setEditable(true);
-	scale->add<nanogui::Label>("Z", "sans-bold", 15);
+	m_ScaleZLable = new nanogui::Label(scale, "Z", "sans-bold", 15);
 	scaleZ = new nanogui::FloatBox<float>(scale, 0.f);
 	scaleZ->setCallback([&](float value) {
-		if (m_SelectedTransform != nullptr)
+		if (m_SelectedTransform != nullptr && !m_bSelectedLight)
 		{
 			m_SelectedTransform->setSize(glm::vec3(m_SelectedTransform->getSize().x, m_SelectedTransform->getSize().y, value));
 			std::cout << m_SelectedTransform->getSize().x << " " << m_SelectedTransform->getSize().y << " " << m_SelectedTransform->getSize().z << std::endl;
+		}
+		else if (m_SelectedLight != nullptr && m_bSelectedLight)
+		{
+			m_SelectedLight->Intencity = value;
 		}
 	});
 	scaleZ->setEditable(true);
@@ -161,6 +176,10 @@ void Engine::UI::TransformWindow::SelectTransform(Components::Transform * select
 	scaleX->setValue(m_SelectedTransform->getSize().x);
 	scaleY->setValue(m_SelectedTransform->getSize().y);
 	scaleZ->setValue(m_SelectedTransform->getSize().z);
+
+	m_ScaleXLable->setCaption("X");
+	m_ScaleYLable->setCaption("Y");
+	m_ScaleZLable->setCaption("Z");
 }
 
 void Engine::UI::TransformWindow::SelectLight(graphics::PostProcessingStack::Light * selectedLight)
@@ -170,10 +189,18 @@ void Engine::UI::TransformWindow::SelectLight(graphics::PostProcessingStack::Lig
 	posX->setValue(selectedLight->Pos.x);
 	posY->setValue(selectedLight->Pos.y);
 	posZ->setValue(selectedLight->Pos.z);
-	m_RotLable->setCaption("Colour");
-	rotX->setValue(selectedLight->Color.x);
-	rotY->setValue(selectedLight->Color.y);
-	rotZ->setValue(selectedLight->Color.z);
+	m_ScaleLable->setCaption("Settings");
+	rotX->setValue(selectedLight->Rot.x);
+	rotY->setValue(selectedLight->Rot.y);
+	rotZ->setValue(selectedLight->Rot.z);
+
+	scaleX->setValue(selectedLight->Radius);
+	scaleY->setValue(selectedLight->Angle);
+	scaleZ->setValue(selectedLight->Intencity);
+
+	m_ScaleXLable->setCaption("R");
+	m_ScaleYLable->setCaption("A");
+	m_ScaleZLable->setCaption("I");
 }
 
 void Engine::UI::TransformWindow::Clear()

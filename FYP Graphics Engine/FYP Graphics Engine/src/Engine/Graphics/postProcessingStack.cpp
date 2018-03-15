@@ -320,10 +320,11 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 		m_AddSSAO->setUniform1f((light + ".Radius").c_str(), m_Lights[i]->Radius);
 		m_AddSSAO->setUniform1f((light + ".Inten").c_str(), m_Lights[i]->Intencity);
 
-		m_AddSSAO->setUniform1f((light + ".Angle").c_str(), 75);
-		m_AddSSAO->setUniform3f((light + ".Direction").c_str(), glm::vec3(0, 1 ,0));
+		m_AddSSAO->setUniform1f((light + ".Angle").c_str(), m_Lights[i]->Angle);
+		glm::quat rotation = glm::toQuat(glm::orientate4(glm::radians(m_Lights[i]->Rot)));
+		m_AddSSAO->setUniform3f((light + ".Direction").c_str(), glm::mat3(View) * (glm::vec3(0, 1, 0)* rotation));
 	}
-	
+
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	
 	m_LumaBuffer->Bind();
@@ -422,6 +423,16 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 			}
 		}
 	});
+
+	nanogui::ColorPicker* lightpicker = new nanogui::ColorPicker(m_SceneLighting, m_SceneAmbient);
+	lightpicker->setCallback([&](nanogui::Color color)
+	{
+		if (m_SelectedLight != nullptr)
+		{
+			m_SelectedLight->Color = glm::vec3(color.x(), color.y(), color.z());
+		}
+	});
+	lightpicker->setHeight(5);
 
 	//Post Pro
 

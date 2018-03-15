@@ -22,6 +22,12 @@ namespace Engine { namespace UI {
 
 		nanogui::Label* m_PosLable;
 		nanogui::Label* m_RotLable;
+		nanogui::Label* m_ScaleLable;
+
+		nanogui::Label* m_ScaleXLable;
+		nanogui::Label* m_ScaleYLable;
+		nanogui::Label* m_ScaleZLable;
+
 		nanogui::FloatBox<float> *posX;
 		nanogui::FloatBox<float> *posY;
 		nanogui::FloatBox<float> *posZ;
