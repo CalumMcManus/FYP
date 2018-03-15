@@ -63,7 +63,7 @@ namespace Engine {	namespace Components {
 
 			for (int i = 0; i < uniforms.size(); i++)
 			{
-				std::cout << "Name: " << uniforms[i] << endl;
+				std::cout << "Name: " << uniforms[i] << std::endl;
 			}
 		}
 	private:

@@ -172,7 +172,7 @@ void Engine::UI::TransformWindow::SelectTransform(Components::Transform * select
 	rotX->setValue(m_SelectedTransform->getRotation().x);
 	rotY->setValue(m_SelectedTransform->getRotation().y);
 	rotZ->setValue(m_SelectedTransform->getRotation().z);
-
+	m_ScaleLable->setCaption("Scale");
 	scaleX->setValue(m_SelectedTransform->getSize().x);
 	scaleY->setValue(m_SelectedTransform->getSize().y);
 	scaleZ->setValue(m_SelectedTransform->getSize().z);
