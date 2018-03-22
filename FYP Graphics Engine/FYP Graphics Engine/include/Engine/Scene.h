@@ -3,11 +3,13 @@
 #include "gameObject.h"
 #include <Component\modelRenderer.h>
 #include <Component\texture.h>
+#include <Component\material.h>
 #include <Component\transform.h>
 #include <Engine\Graphics\shader.h>
 #include "Graphics\SkyBox.h"
 #include <Engine\Graphics\postProcessingStack.h>
 #include <Engine\UI\TransformWindow.h>
+#include <Engine\UI\MaterialWindow.h>
 
 #include <glm.hpp>
 #include <gtc\matrix_transform.hpp>
@@ -48,6 +50,7 @@ namespace Engine
 
 		//UI Stuff
 		UI::TransformWindow* m_TransformWindow;
+		UI::MaterialWindow* m_MaterialWindow;
 		//TODO:: In Camera class create orbit functionality
 		//Orbit Camera position with bounce
 		float theta = 0;

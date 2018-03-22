@@ -91,8 +91,8 @@ namespace Engine { namespace graphics {
 	void Window::drawContents()
 	{
 		glEnable(GL_BLEND);
-		//glBlendFunc(GL_ONE, GL_ZERO);
-		glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(GL_ONE, GL_ZERO);
+		//glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_DEPTH_TEST);
 
 		glDepthMask(GL_TRUE);

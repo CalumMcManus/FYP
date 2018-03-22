@@ -44,14 +44,18 @@ namespace Engine {
 					stbi_image_free(textureData);
 				}
 			};
+			~Texture()
+			{
+				glDeleteTextures(1, &m_TextureID);
+			};
 			void Update(float deltaTime) override {};
 			void Message(const char* message) override {};
 
-			void bindTexture(graphics::Shader* shader) 
+			void bindTexture(graphics::Shader* shader, GLenum activeTex, int id, const char* textureName) 
 			{ 	
-				GLint baseImageLoc = glGetUniformLocation(shader->getID(), "texture2D");
-				glUniform1i(baseImageLoc, 2);
-				glActiveTexture(GL_TEXTURE2);
+				GLint baseImageLoc = glGetUniformLocation(shader->getID(), textureName);
+				glUniform1i(baseImageLoc, id);
+				glActiveTexture(activeTex);
 				glBindTexture(GL_TEXTURE_2D, m_TextureID); 
 			}
 			GLuint getTextureID() { return m_TextureID; }

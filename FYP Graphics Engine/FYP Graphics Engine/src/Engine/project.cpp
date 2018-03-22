@@ -13,6 +13,16 @@ Engine::Project::Project(GLFWEngine* enginePointer)
 		AddModel();
 	}
 	)->setTooltip("Add model to the scene.");
+	gui->addButton("Add Albedo Texture", [&]()
+	{
+		AddModel();
+	}
+	)->setTooltip("Add a colour texure to the selected model.");
+	gui->addButton("Add Specular Texture", [&]()
+	{
+		AddModel();
+	}
+	)->setTooltip("Add a specular texture to the selected model");
 	enginePointer->m_Window->setVisible(true);
 	enginePointer->m_Window->performLayout();
 	windowGUI->center();
@@ -45,8 +55,13 @@ bool Engine::Project::SetUpProjectDirectories()
 void Engine::Project::AddModel()
 {
 	GameObject* tempObj = new GameObject();
+	tempObj->addComponent(new Material(new graphics::Shader("../Assets/Shaders/differed.vert", "../Assets/Shaders/differed.frag")));
+	//Components::Material* tempMat = tempObj->getComponent<Components::Material>();
+	//tempMat->AddAlbedo(FileUtils::BrowseFiles("Select Albedo Texture").c_str());
 	tempObj->addComponent(new ModelRenderer(FileUtils::BrowseFiles("Select Model").c_str()));
-	tempObj->addComponent(new Texture(FileUtils::BrowseFiles("Select Albedo Texture").c_str()));
+	//tempMat->AddAlbedo(FileUtils::BrowseFiles("Select Albedo Texture").c_str());
+	//tempMat->AddSpecular(FileUtils::BrowseFiles("Select Specular Texture").c_str());
+	//tempObj->addComponent(new Texture(FileUtils::BrowseFiles("Select Albedo Texture").c_str()));
 	tempObj->addComponent(new Transform(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
 	m_Scene->AddObject(tempObj);
 }

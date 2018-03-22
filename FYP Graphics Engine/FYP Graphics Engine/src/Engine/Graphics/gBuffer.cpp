@@ -15,7 +15,7 @@ Engine::graphics::GBuffer::GBuffer(Window * window, int samples, Shader * shader
 
 		createBufferMultisample(GL_TEXTURE1, GL_RGB16F, m_PositionTexture); //Position
 		createBufferMultisample(GL_TEXTURE2, GL_RGB16F, m_NormalTexture); //Normal
-		createBufferMultisample(GL_TEXTURE3, GL_RGB8, m_Texture); //Color
+		createBufferMultisample(GL_TEXTURE3, GL_RGBA8, m_Texture); //Color
 		createBufferMultisample(GL_TEXTURE3, GL_RGB8, m_UnlitTexture); //Color
 		createBufferMultisample(GL_TEXTURE4, GL_DEPTH_COMPONENT32F, m_DepthTexture); //Color
 
@@ -52,7 +52,7 @@ Engine::graphics::GBuffer::GBuffer(Window * window, int samples, Shader * shader
 
 		createBuffer(GL_TEXTURE1, GL_RGB16F, m_PositionTexture); //Position
 		createBuffer(GL_TEXTURE2, GL_RGB16F, m_NormalTexture); //Normal
-		createBuffer(GL_TEXTURE3, GL_RGB8, m_Texture); //Color
+		createBuffer(GL_TEXTURE3, GL_RGBA8, m_Texture); //Color
 		createBuffer(GL_TEXTURE3, GL_RGB8, m_UnlitTexture); //Color
 		glGenTextures(1, &m_DepthTexture);
 		glBindTexture(GL_TEXTURE_2D, m_DepthTexture);
@@ -100,7 +100,7 @@ void Engine::graphics::GBuffer::createBuffer(GLenum texUnit, GLenum format, GLui
 	glGenTextures(1, &texid);
 	glBindTexture(GL_TEXTURE_2D, texid);
 	glTexImage2D(
-		GL_TEXTURE_2D, 0, format, windowPointer->getWidth(), windowPointer->getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0
+		GL_TEXTURE_2D, 0, format, windowPointer->getWidth(), windowPointer->getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0
 	);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

@@ -10,17 +10,56 @@ out vec4 fragment_colour;
 in vec2 TexCoords;
 in vec3 Position;
 in vec3 Normal;
+in vec3 toCameraVector;
 
 uniform sampler2D texture2D;
+uniform sampler2D specular2D;
+uniform sampler2D normal2D;
+
+uniform bool UseTexture;
+uniform bool UseSpecular;
+uniform bool UseNormal;
+
+struct Material {
+	vec3 Color;
+};
+uniform Material material;
+
+in mat3 TBN;
+in vec3 tan;
 
 void main()
 {    
     // store the fragment position vector in the first gbuffer texture
     PositionTex = Position;
     // also store the per-fragment normals into the gbuffer
-    NormalTex = normalize(Normal);
+	
+    
     // and the diffuse per-fragment color
-    ColorTex = vec4(texture(texture2D, TexCoords).rgb, 0.0);
-	vec4 color = texture(texture2D, TexCoords);
-	fragment_colour = color;
+	if(UseTexture)
+	{
+		ColorTex.rgb = texture(texture2D, TexCoords).rgb * material.Color;
+	}
+	else{
+		ColorTex.rgb = material.Color;
+	}
+	if(UseSpecular)
+	{
+		ColorTex.a = texture(specular2D, TexCoords).r;
+	}
+	else
+	{
+		ColorTex.a = 0;
+	}
+	if(UseNormal)
+	{
+		NormalTex = normalize(TBN * (texture(normal2D, TexCoords).rgb * 2 - 1));
+	}
+	else
+	{
+		NormalTex = normalize(Normal);
+	}
+	//vec4 color = texture(texture2D, TexCoords);
+	//fragment_colour = color;
+	
 } 

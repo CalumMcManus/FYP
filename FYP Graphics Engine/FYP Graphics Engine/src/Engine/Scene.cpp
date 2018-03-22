@@ -9,6 +9,7 @@ Engine::Scene::Scene(GLFWEngine* enginePointer)
 		glm::vec3(0, 1, 0)
 	);
 	m_TransformWindow = new UI::TransformWindow(enginePointer);
+	m_MaterialWindow = new UI::MaterialWindow(enginePointer);
 	m_DefaultShader->enable();
 
 	m_PostProcessing = new graphics::PostProcessingStack(enginePointer);
@@ -79,6 +80,7 @@ void Engine::Scene::Render()
 						{
 							std::cout << "Selected Model!" << std::endl;
 							m_TransformWindow->SelectTransform(transform);
+							m_MaterialWindow->SelectMaterial(v_Objects[j]->getComponent<Material>());
 							selected = true;
 							break;
 						}
@@ -123,7 +125,7 @@ void Engine::Scene::Render()
 		//TODO:: Texture and other map handling needs to be moved into material
 		Components::Transform* tempTrasnform = v_Objects[i]->getComponent<Components::Transform>();
 		Components::ModelRenderer* tempModel = v_Objects[i]->getComponent<Components::ModelRenderer>();
-		Components::Texture* tempTexture = v_Objects[i]->getComponent<Components::Texture>();
+		Components::Material* tempMat = v_Objects[i]->getComponent<Components::Material>();
 		
 		if (tempTrasnform)
 		{
@@ -136,8 +138,8 @@ void Engine::Scene::Render()
 
 			m_DefaultShader->setUniformMat4("Model", tempTrasnform->getMatrix());
 		}
-		if (tempTexture)
-			tempTexture->bindTexture(m_DefaultShader);
+		if (tempMat)
+			tempMat->BindTextures();
 		if (tempModel)
 			tempModel->getModel().render();
 	}

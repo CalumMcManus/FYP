@@ -4,6 +4,7 @@
 #include <Util\fileutil.h>
 #include <Engine\Scene.h>
 #include <Engine\Engine.h>
+#include <Component\material.h>
 
 namespace Engine
 {
