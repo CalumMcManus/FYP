@@ -7,13 +7,18 @@ namespace Engine { namespace Components {
 	{
 	public:
 		ModelRenderer(const char* meshPath) 
-		{ m_Model = new graphics::Model(meshPath); };
+		{ 
+			m_Model = new graphics::Model(meshPath);
+			m_Path = meshPath;
+		};
 		void Update(float deltaTime) override {};
 		void Message(const char* message) override {};
 
 		graphics::Model& getModel() { return *m_Model; }
+		const std::string Path() const { return m_Path; }
 	private:
 		graphics::Model* m_Model;
+		std::string m_Path;
 
 
 	};

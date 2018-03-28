@@ -16,6 +16,7 @@
 #include <gtx/transform.hpp>
 #include <gtx/euler_angles.hpp>
 #include <glm.hpp>
+#include <fstream>
 namespace Engine { namespace graphics {
 
 	class PostProcessingStack
@@ -30,6 +31,7 @@ namespace Engine { namespace graphics {
 			float Angle;
 			float Radius;
 			float Intencity;
+			Light() {};
 			Light(glm::vec3 pos, glm::vec3 color, float radius, float inten)
 			{
 				Pos = pos;
@@ -41,7 +43,7 @@ namespace Engine { namespace graphics {
 			}
 
 		};
-		PostProcessingStack(GLFWEngine* enginePointer);
+		PostProcessingStack(GLFWEngine* enginePointer, bool load);
 		~PostProcessingStack();
 		void Bind();
 		void Render(glm::mat4 P, glm::mat4 View, glm::vec3 camPos);
@@ -49,6 +51,9 @@ namespace Engine { namespace graphics {
 		std::vector<Light*> Lights() { return m_Lights; };
 
 		void SetSelectedLight(Light* light) { m_SelectedLight = light; }
+
+		void Save(std::ofstream& file);
+		void Load(std::ifstream& file);
 	private:
 		std::vector<Light*> m_Lights;
 		Light *m_SelectedLight;
@@ -63,7 +68,7 @@ namespace Engine { namespace graphics {
 		graphics::FrameBuffer* m_FrameBuffer;
 		//Grey Scale
 		graphics::FrameBuffer* m_LumaBuffer;
-		//Horizontal Blue
+		//Horizontal Blur
 		graphics::FrameBuffer* m_HBlurBuffer;
 		//Vertical Blur
 		graphics::FrameBuffer* m_VBlurBuffer;

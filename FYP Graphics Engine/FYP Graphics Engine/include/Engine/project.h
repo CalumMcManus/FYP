@@ -18,8 +18,11 @@ namespace Engine
 
 		void Update();
 		void Save();
+		void Load();
+
+		void Init();
 	private:
-		std::string m_Directory;
+		std::string m_Directory = "./";
 		bool CreateConfigFile(std::string path);
 
 		Scene* m_Scene;
@@ -28,6 +31,9 @@ namespace Engine
 		//NanoGUI Test
 		nanogui::FormHelper *gui;
 		nanogui::ref<nanogui::Window> windowGUI;
+		nanogui::FormHelper *projectgui;
+		nanogui::ref<nanogui::Window> projectSetup;
 		bool m_bOrbit = false;
+		bool m_bLoad = false;
 	};
 }

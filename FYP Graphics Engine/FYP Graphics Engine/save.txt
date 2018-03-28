@@ -1,0 +1,53 @@
+#GOBEGIN
+#Transform
+Pos 7.000000 4.000000 0.000000
+Rot 0.000000 0.000000 0.000000
+Scale 4.000000 4.000000 4.000000
+#Material
+Color: 1.000000 1.000000 1.000000
+D:\Work\UniWork\Year 3\FYP\Git\FYP Graphics Engine\Assets\Textures\cobblesDiffuse.png
+D:\Work\UniWork\Year 3\FYP\Git\FYP Graphics Engine\Assets\Textures\cobblesSpecular.png
+D:\Work\UniWork\Year 3\FYP\Git\FYP Graphics Engine\Assets\Textures\cobblesNormal.png
+#Model
+D:\Work\UniWork\Year 3\FYP\Git\FYP Graphics Engine\Assets\Models\Cube.obj
+#GOEND
+#GOBEGIN
+#Transform
+Pos -5.000000 3.000000 0.000000
+Rot 0.000000 0.000000 0.000000
+Scale 1.000000 1.000000 1.000000
+#Material
+Color: 1.000000 1.000000 1.000000
+D:\Work\UniWork\Year 3\FYP\Git\FYP Graphics Engine\Assets\Textures\test.tga
+
+
+#Model
+D:\Work\UniWork\Year 3\FYP\Git\FYP Graphics Engine\Assets\Models\test.obj
+#GOEND
+#Lighting
+AmbientColour: 1.000000 1.000000 1.000000
+AmbientInten: 0.818182
+#LBEGIN
+Pos: 10.000000 0.000000 0.000000
+Rot: 0.000000 0.000000 0.000000
+Color: 1.000000 0.000000 1.000000
+Inten: 3.000000
+Radius: 10.000000
+Angle: 180.000000
+#LEND 
+#LBEGIN
+Pos: -10.000000 0.000000 0.000000
+Rot: 0.000000 0.000000 0.000000
+Color: 0.000000 1.000000 1.000000
+Inten: 3.000000
+Radius: 10.000000
+Angle: 180.000000
+#LEND 
+#Effects
+MSAA: 1
+SSAO: 1
+BloomInten: 0.681818
+BloomKernal: 25
+BloomSigma: 5.000000
+VignetteRadius: 0.750000
+VignetteSoft: 0.800000

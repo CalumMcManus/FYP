@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <Engine\Graphics\shader.h>
 #include <Component\texture.h>
+#include <fstream>
 namespace Engine {	namespace Components {
 
 	class Material : public Component
@@ -127,6 +128,23 @@ namespace Engine {	namespace Components {
 			}
 		}
 
+		void Save(std::ofstream& file)
+		{
+			file << "#Material" << std::endl;
+			file << "Color: " + to_string(m_MaterialColour.x) + " " + to_string(m_MaterialColour.y) + " " + to_string(m_MaterialColour.z) << std::endl;
+			
+			if (m_Albedo)
+				file << m_Albedo->Path();
+			file << std::endl;
+
+			if (m_Specular)
+				file << m_Specular->Path();
+			file << std::endl;
+
+			if (m_Normal)
+				file << m_Normal->Path();
+			file << std::endl;
+		}
 		
 	private:
 		graphics::Shader* m_Shader;

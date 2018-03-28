@@ -12,6 +12,7 @@ namespace Engine {
 		public:
 			Texture(const char* filePath) 
 			{ 
+				m_Path = filePath;
 				glActiveTexture(GL_TEXTURE2);
 				glGenTextures(1, &m_TextureID);
 
@@ -59,9 +60,10 @@ namespace Engine {
 				glBindTexture(GL_TEXTURE_2D, m_TextureID); 
 			}
 			GLuint getTextureID() { return m_TextureID; }
+			const std::string Path() const { return m_Path; }
 		private:
 			GLuint m_TextureID;
-
+			std::string m_Path;
 
 		};
 

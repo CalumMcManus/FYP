@@ -1,8 +1,10 @@
 #include <Engine\Scene.h>
 
-Engine::Scene::Scene(GLFWEngine* enginePointer)
+Engine::Scene::Scene(GLFWEngine* enginePointer, bool load)
 {
 	m_EnginePointer = enginePointer;
+	
+
 	V = glm::lookAt(
 		camPos,
 		glm::vec3(0, 5, 0),
@@ -12,12 +14,10 @@ Engine::Scene::Scene(GLFWEngine* enginePointer)
 	m_MaterialWindow = new UI::MaterialWindow(enginePointer);
 	m_DefaultShader->enable();
 
-	m_PostProcessing = new graphics::PostProcessingStack(enginePointer);
+	m_PostProcessing = new graphics::PostProcessingStack(enginePointer, load);
 	
 	m_LightObject = new GameObject();
 	m_LightObject->addComponent(new ModelRenderer("../Assets/Models/Light.obj"));
-
-	
 
 	
 }
@@ -176,4 +176,155 @@ void Engine::Scene::AddObject(GameObject * obj)
 
 void Engine::Scene::Save(std::string savePath)
 {
+	std::string filePath = savePath + "save.txt";
+	std::ofstream outputFile;
+	outputFile.open(filePath, std::ofstream::out | std::ofstream::trunc);
+
+	for (unsigned int i = 0; i < v_Objects.size(); i++)
+	{
+		outputFile << "#GOBEGIN" << std::endl;
+		Components::Transform* tempTransform = v_Objects[i]->getComponent<Components::Transform>();
+		Components::ModelRenderer* tempModel = v_Objects[i]->getComponent<Components::ModelRenderer>();
+		Components::Material* tempMat = v_Objects[i]->getComponent<Components::Material>();
+
+		if (tempTransform)
+		{
+			glm::vec3 pos = tempTransform->getPosition();
+			glm::vec3 rot = tempTransform->getRotation();
+			glm::vec3 scale = tempTransform->getSize();
+			outputFile << "#Transform" << std::endl;
+			outputFile << "Pos " + std::to_string(pos.x) + " " + std::to_string(pos.y) + " " + std::to_string(pos.z) << std::endl;
+			outputFile << "Rot " + std::to_string(rot.x) + " " + std::to_string(rot.y) + " " + std::to_string(rot.z) << std::endl;
+			outputFile << "Scale " + std::to_string(scale.x) + " " + std::to_string(scale.y) + " " + std::to_string(scale.z) << std::endl;
+		}
+		if (tempMat)
+		{
+			tempMat->Save(outputFile);
+		}
+		if (tempModel)
+		{
+			outputFile << "#Model" << std::endl;
+			outputFile << tempModel->Path() << std::endl;
+		}
+		outputFile << "#GOEND" << std::endl;	
+	}
+
+	m_PostProcessing->Save(outputFile);
+	outputFile.close();
+}
+
+void Engine::Scene::Load(std::string loadPath)
+{
+	std::string filePath = loadPath + "save.txt";
+	ifstream inputFile;
+	inputFile.open(filePath);
+
+	std::string line;
+	std::cout << "Loading..." << std::endl;
+	if (inputFile.is_open())
+	{
+		while (!inputFile.eof())
+		{
+			std::getline(inputFile, line);
+			std::string s;
+			std::istringstream iss(line);
+
+			iss >> s;
+
+			if (s == "#GOBEGIN")
+			{
+				GameObject* obj = new GameObject();
+				std::cout << "gameobject" << std::endl;
+				while (s != "#GOEND")
+				{
+					std::getline(inputFile, line);
+					iss = std::istringstream(line);
+					iss >> s;
+					if (s == "#Transform")
+					{
+						float f;
+						Transform* tf = new Transform();
+						vec3 pos;
+						vec3 rot;
+						vec3 scale;
+
+						std::getline(inputFile, line);
+						iss = std::istringstream(line);
+						iss >> s;
+						iss >> f; pos.x = f;
+						iss >> f; pos.y = f;
+						iss >> f; pos.z = f;
+
+						std::getline(inputFile, line);
+						iss = std::istringstream(line);
+						iss >> s;
+						iss >> f; rot.x = f;
+						iss >> f; rot.y = f;
+						iss >> f; rot.z = f;
+
+						std::getline(inputFile, line);
+						iss = std::istringstream(line);
+						iss >> s;
+						iss >> f; scale.x = f;
+						iss >> f; scale.y = f;
+						iss >> f; scale.z = f;
+
+						tf->setPosition(pos);
+						tf->setRotation(rot);
+						tf->setSize(scale);
+
+						obj->addComponent(tf);
+					}
+					if (s == "#Material")
+					{
+						float f;
+						std::string path = "";
+						Material* mat = new Material(m_DefaultShader);
+						glm::vec3 color;
+						std::getline(inputFile, line);
+						iss = std::istringstream(line);
+						iss >> s;
+						iss >> f; color.x = f;
+						iss >> f; color.y = f;
+						iss >> f; color.z = f;
+						mat->SetColour(color);
+
+						std::getline(inputFile, line);
+						if(line.size() > 0)
+							mat->AddAlbedo(line.c_str());
+
+						std::getline(inputFile, line);
+						if (line.size() > 0)
+							mat->AddSpecular(line.c_str());
+
+						std::getline(inputFile, line);
+						if (line.size() > 0)
+							mat->AddNormal(line.c_str());
+
+						obj->addComponent(mat);
+
+					}
+					if (s == "#Model")
+					{
+						ModelRenderer* render = nullptr;
+
+						std::getline(inputFile, line);
+
+						render = new ModelRenderer(line.c_str());
+
+						obj->addComponent(render);
+					}
+				}
+				v_Objects.push_back(obj);
+			}
+
+			if (s == "#Lighting")
+				m_PostProcessing->Load(inputFile);
+		}
+	}
+	else
+	{
+		std::cout << "Scene: Load: Failed to open file" << std::endl;
+	}
+
 }

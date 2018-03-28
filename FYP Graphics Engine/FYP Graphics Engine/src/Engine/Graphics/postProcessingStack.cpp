@@ -1,10 +1,10 @@
 #include <Engine\Graphics\postProcessingStack.h>
 
-Engine::graphics::PostProcessingStack::PostProcessingStack(GLFWEngine * enginePointer)
+Engine::graphics::PostProcessingStack::PostProcessingStack(GLFWEngine * enginePointer, bool load)
 {
 	m_EnginePointer = enginePointer;
-	m_Lights.push_back(new Light(glm::vec3(10, 0, 0), glm::vec3(1, 0, 1), 10.0f, 3.0f));
-	m_Lights.push_back(new Light(glm::vec3(-10, 0, 0), glm::vec3(0, 1, 1), 10.0f, 3.0f));
+	//m_Lights.push_back(new Light(glm::vec3(10, 0, 0), glm::vec3(1, 0, 1), 10.0f, 3.0f));
+	//m_Lights.push_back(new Light(glm::vec3(-10, 0, 0), glm::vec3(0, 1, 1), 10.0f, 3.0f));
 	//Setup Quad VAO
 
 	glGenBuffers(1, &m_QuadVBO);
@@ -60,7 +60,140 @@ Engine::graphics::PostProcessingStack::PostProcessingStack(GLFWEngine * enginePo
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	SetUp();
+
+	if(!load)
+		SetUpUI();
+}
+void Engine::graphics::PostProcessingStack::Save(std::ofstream & file)
+{
+	file << "#Lighting" << std::endl;
+
+	file << "AmbientColour: " + std::to_string(m_SceneAmbient.x()) + " " + std::to_string(m_SceneAmbient.y()) + " " + std::to_string(m_SceneAmbient.z()) << std::endl;
+	file << "AmbientInten: " + std::to_string(m_fAmbientInten) << std::endl;
+	for (unsigned int i = 0; i < m_Lights.size(); i++)
+	{
+		file << "#LBEGIN" << std::endl;
+		file << "Pos: " + std::to_string(m_Lights[i]->Pos.x) + " " + std::to_string(m_Lights[i]->Pos.y) + " " + std::to_string(m_Lights[i]->Pos.z) << std::endl;
+		file << "Rot: " + std::to_string(m_Lights[i]->Rot.x) + " " + std::to_string(m_Lights[i]->Rot.y) + " " + std::to_string(m_Lights[i]->Rot.z) << std::endl;
+		file << "Color: " + std::to_string(m_Lights[i]->Color.x) + " " + std::to_string(m_Lights[i]->Color.y) + " " + std::to_string(m_Lights[i]->Color.z) << std::endl;
+		file << "Inten: " + std::to_string(m_Lights[i]->Intencity) << std::endl;
+		file << "Radius: " + std::to_string(m_Lights[i]->Radius) << std::endl;
+		file << "Angle: " + std::to_string(m_Lights[i]->Angle) << std::endl;
+		file << "#LEND " << std::endl;
+	}
+
+	file << "#Effects" << std::endl;
+	file << "MSAA: " + std::to_string((int)m_MS) << std::endl;
+	file << "SSAO: " + std::to_string((int)m_SSAO) << std::endl;
+	file << "BloomInten: " + std::to_string(m_fBloomIntensity) << std::endl;
+	file << "BloomKernal: " + std::to_string(m_iBloomKernalSize) << std::endl;
+	file << "BloomSigma: " + std::to_string(m_fBloomSigma) << std::endl;
+	file << "VignetteRadius: " + std::to_string(m_fVignetteRadius) << std::endl;
+	file << "VignetteSoft: " + std::to_string(m_fVignetteSoftness) << std::endl;
+
+}
+void Engine::graphics::PostProcessingStack::Load(std::ifstream & file)
+{
+	std::string line;
+	std::istringstream iss;
+	std::string s;
+	float x, y, z;
+	std::getline(file, line);
+	iss = std::istringstream(line);
+	iss >> s;
+	iss >> x; iss >> y; iss >> z;
+	m_SceneAmbient = nanogui::Color(x, y, z, 1.0f);
+	std::getline(file, line);
+	iss = std::istringstream(line);
+	iss >> s;
+	iss >> m_fAmbientInten;
+	while (!file.eof())
+	{
+		std::getline(file, line);
+		iss = std::istringstream(line);
+		iss >> s;
+		if (s == "#LBEGIN")
+		{
+			Light* light = new Light();
+			std::cout << "light" << std::endl;
+
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			
+			glm::vec3 tempVector;
+			iss >> s;
+			iss >> tempVector.x; iss >> tempVector.y; iss >> tempVector.z;
+			light->Pos = tempVector;
+			tempVector = glm::vec3();
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> tempVector.x; iss >> tempVector.y; iss >> tempVector.z;
+			light->Rot = tempVector;
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> tempVector.x;
+			iss >> tempVector.y;
+			iss >> tempVector.z;
+			light->Color = tempVector;
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> light->Intencity;
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> light->Radius;
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> light->Angle;
+			m_Lights.push_back(light);
+		}
+
+		if (s == "#Effects")
+		{
+			int boolean;
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> boolean;
+			m_MS = (bool)boolean;
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> boolean;
+			m_SSAO = (bool)boolean;
+
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> m_fBloomIntensity;
+
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> m_iBloomKernalSize;
+
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> m_fBloomSigma;
+
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> m_fVignetteRadius;
+
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> m_fVignetteSoftness;
+		}
+	}
 	SetUpUI();
+	
 }
 void Engine::graphics::PostProcessingStack::SetUp()
 {
@@ -388,7 +521,7 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 		nanogui::Alignment::Maximum, 0, 20));
 
 	nanogui::Slider *slider = new nanogui::Slider(panelLight);
-	slider->setValue(0.5f);
+	slider->setValue(m_fAmbientInten);
 	slider->setFixedWidth(150);
 	nanogui::TextBox *textBox = new nanogui::TextBox(panelLight);
 	textBox->setFixedSize(Eigen::Vector2i(60, 25));
@@ -447,7 +580,7 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 		nanogui::Alignment::Maximum, 0, 20));
 
 	nanogui::Slider *sliderBloom = new nanogui::Slider(panel);
-	sliderBloom->setValue(0.5f);
+	sliderBloom->setValue(m_fBloomIntensity);
 	sliderBloom->setFixedWidth(150);
 	nanogui::TextBox *textBoxBloom = new nanogui::TextBox(panel);
 	textBoxBloom->setFixedSize(Eigen::Vector2i(60, 25));
@@ -495,7 +628,7 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 		nanogui::Alignment::Maximum, 0, 20));
 
 	nanogui::Slider *radiusSlider = new nanogui::Slider(vignettePanel);
-	radiusSlider->setValue(0.5f);
+	radiusSlider->setValue(m_fVignetteRadius);
 	radiusSlider->setFixedWidth(150);
 	nanogui::TextBox *vignetteTextBox = new nanogui::TextBox(vignettePanel);
 	vignetteTextBox->setFixedSize(Eigen::Vector2i(60, 25));
@@ -518,7 +651,7 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 		nanogui::Alignment::Maximum, 0, 20));
 
 	nanogui::Slider *softnessSlider = new nanogui::Slider(vignetteSoftPanel);
-	softnessSlider->setValue(0.5f);
+	softnessSlider->setValue(m_fVignetteSoftness);
 	softnessSlider->setFixedWidth(150);
 	nanogui::TextBox *vignetteSoftTextBox = new nanogui::TextBox(vignetteSoftPanel);
 	vignetteSoftTextBox->setFixedSize(Eigen::Vector2i(60, 25));
@@ -538,7 +671,9 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 	CheckBox *cbMM = new CheckBox(m_PostProWindow, "MSAA x4",
 		[&](bool state) { m_MS = !m_MS; }
 	);
+	cbMM->setChecked(m_MS);
 	CheckBox *cbSSAO = new CheckBox(m_PostProWindow, "SSAO",
 		[&](bool state) { m_SSAO = !m_SSAO; }
 	);
+	cbSSAO->setChecked(m_SSAO);
 }

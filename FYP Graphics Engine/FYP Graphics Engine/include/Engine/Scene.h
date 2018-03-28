@@ -10,6 +10,7 @@
 #include <Engine\Graphics\postProcessingStack.h>
 #include <Engine\UI\TransformWindow.h>
 #include <Engine\UI\MaterialWindow.h>
+#include <Util\fileutil.h>
 
 #include <glm.hpp>
 #include <gtc\matrix_transform.hpp>
@@ -17,12 +18,14 @@
 #include <vector>
 #include <glad\glad.h>
 #include <random>
+#include <fstream>
+#include <sstream>
 namespace Engine
 {
 	class Scene
 	{
 	public:
-		Scene(GLFWEngine* enginePointer);
+		Scene(GLFWEngine* enginePointer, bool load);
 		~Scene();
 
 		void Update(bool orbit);
@@ -31,6 +34,7 @@ namespace Engine
 		void AddObject(GameObject* obj);
 
 		void Save(std::string savePath);
+		void Load(std::string loadPath);
 
 	private:
 		graphics::Shader* m_DefaultShader = new graphics::Shader("../Assets/Shaders/differed.vert", "../Assets/Shaders/differed.frag");
