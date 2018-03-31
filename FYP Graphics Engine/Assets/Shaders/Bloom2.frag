@@ -6,7 +6,7 @@ uniform sampler2D texFramebuffer;
 uniform float sigmaValue = 3;
 uniform int kernalSize = 25;
 
-const vec2 resolution = vec2(1280, 720);
+uniform vec2 resolution = vec2(1280, 720);
 const float radius = 2.0;
 const vec2 dir = vec2(0.0, 1.0);
 

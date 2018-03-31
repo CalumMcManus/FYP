@@ -3,7 +3,7 @@
 layout (location = 0) out vec3 PositionTex;
 layout (location = 1) out vec3 NormalTex;
 layout (location = 2) out vec4 ColorTex;
-
+layout (location = 3) out vec3 Components;
 
 out vec4 fragment_colour;
 
@@ -15,13 +15,18 @@ in vec3 toCameraVector;
 uniform sampler2D texture2D;
 uniform sampler2D specular2D;
 uniform sampler2D normal2D;
+uniform sampler2D metalic2D;
+uniform sampler2D rough2D;
 
 uniform bool UseTexture;
 uniform bool UseSpecular;
 uniform bool UseNormal;
+uniform bool UseMetalic;
+uniform bool UseRough;
 
 struct Material {
 	vec3 Color;
+	vec3 Spec;
 };
 uniform Material material;
 
@@ -59,7 +64,21 @@ void main()
 	{
 		NormalTex = normalize(Normal);
 	}
-	//vec4 color = texture(texture2D, TexCoords);
-	//fragment_colour = color;
-	
+	if(UseMetalic)
+	{
+		Components.x = texture(metalic2D, TexCoords).r;
+	}
+	else
+	{
+		Components.x = 0;
+	}
+	if(UseRough)
+	{
+		Components.y = texture(rough2D, TexCoords).r;
+	}
+	else
+	{
+		Components.y = 0;
+	}
+	Components.z = 0; //Well be used for reflectivity
 } 

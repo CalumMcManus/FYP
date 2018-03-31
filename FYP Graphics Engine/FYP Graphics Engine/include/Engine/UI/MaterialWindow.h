@@ -17,14 +17,20 @@ namespace Engine { namespace UI {
 			bool m_bHasAlbedo = false;
 			bool m_bHasSpecular = false;
 			bool m_bHasNormal = false;
+			bool m_bHasMetal = false;
+			bool m_bHasRough = false;
 			Components::Material* m_SelectedMaterial;
 			nanogui::Window* m_MaterialWindow;
 
 			nanogui::Button* m_AbledoBtn;
 			nanogui::Button* m_SpecBtn;
 			nanogui::Button* m_NormBtn;
+			nanogui::Button* m_MetalBtn;
+			nanogui::Button* m_RoughBtn;
 
 			nanogui::ColorPicker* m_MaterialColor;
+			nanogui::ColorPicker* m_MaterialSpecular;
+			
 
 		};
 

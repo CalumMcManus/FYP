@@ -39,7 +39,7 @@ namespace Engine
 	private:
 		graphics::Shader* m_DefaultShader = new graphics::Shader("../Assets/Shaders/differed.vert", "../Assets/Shaders/differed.frag");
 		graphics::Shader* m_LightShader = new graphics::Shader("../Assets/Shaders/light.vert", "../Assets/Shaders/light.frag");
-		graphics::SkyBox* m_SkyBox = new graphics::SkyBox("../Assets/Textures/Cubemap/", "");
+		graphics::SkyBox* m_SkyBox;// = new graphics::SkyBox("../Assets/Textures/Cubemap_2/", "");
 		std::vector<GameObject*> v_Objects;
 
 		GameObject* m_LightObject;

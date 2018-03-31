@@ -43,7 +43,7 @@ namespace Engine { namespace graphics {
 			}
 
 		};
-		PostProcessingStack(GLFWEngine* enginePointer, bool load);
+		PostProcessingStack(GLFWEngine* enginePointer, SkyBox* skyBox, bool load);
 		~PostProcessingStack();
 		void Bind();
 		void Render(glm::mat4 P, glm::mat4 View, glm::vec3 camPos);
@@ -60,6 +60,7 @@ namespace Engine { namespace graphics {
 		void SetUp();
 		bool m_MS = false;
 		bool m_SSAO = false;
+		bool m_Outline = false;
 		//Multi-Sample
 		graphics::GBuffer* m_MSBuffer;
 		//Multi-Sample
@@ -85,7 +86,7 @@ namespace Engine { namespace graphics {
 
 		nanogui::Window* m_PostProWindow;
 
-		graphics::SkyBox* m_SkyBox = new graphics::SkyBox("../Assets/Textures/Cubemap/", "");
+		graphics::SkyBox* m_SkyBox;
 		
 		void SetUpUI();
 

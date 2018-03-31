@@ -92,12 +92,30 @@ namespace Engine {	namespace Components {
 		const void RemoveNormal() { delete m_Normal; m_Normal = nullptr; }
 		const Texture* GetNormal() const { return m_Normal; }
 
+		const void AddMetal(const char* filePath)
+		{
+			m_Metalic = new Texture(filePath);
+		}
+		const void RemoveMetal() { delete m_Metalic; m_Metalic = nullptr; }
+		const Texture* GetMetal() const { return m_Metalic; }
+
+		const void AddRough(const char* filePath)
+		{
+			m_Roughness = new Texture(filePath);
+		}
+		const void RemoveRough() { delete m_Roughness; m_Roughness = nullptr; }
+		const Texture* GetRough() const { return m_Roughness; }
+
 		const void SetColour(glm::vec3 colour) { m_MaterialColour = colour; }
 		const glm::vec3 GetColour() const { return m_MaterialColour; }
+
+		const void SetSpecColour(glm::vec3 colour) { m_MaterialSpecular = colour; }
+		const glm::vec3 GetSpecColour() const { return m_MaterialSpecular; }
 
 		void BindTextures()
 		{
 			m_Shader->setUniform3f("material.Color", m_MaterialColour);
+			m_Shader->setUniform3f("material.Spec", m_MaterialSpecular);
 			if (m_Albedo)
 			{
 				m_Shader->setUniform1i("UseTexture", GL_TRUE);
@@ -126,12 +144,31 @@ namespace Engine {	namespace Components {
 			{
 				m_Shader->setUniform1i("UseNormal", GL_FALSE);
 			}
+			if (m_Metalic)
+			{
+				m_Shader->setUniform1i("UseMetalic", GL_TRUE);
+				m_Metalic->bindTexture(m_Shader, GL_TEXTURE4, 4, "metalic2D");
+			}
+			else
+			{
+				m_Shader->setUniform1i("UseMetalic", GL_FALSE);
+			}
+			if (m_Roughness)
+			{
+				m_Shader->setUniform1i("UseRough", GL_TRUE);
+				m_Roughness->bindTexture(m_Shader, GL_TEXTURE5, 5, "rough2D");
+			}
+			else
+			{
+				m_Shader->setUniform1i("UseRough", GL_FALSE);
+			}
+		
 		}
 
 		void Save(std::ofstream& file)
 		{
 			file << "#Material" << std::endl;
-			file << "Color: " + to_string(m_MaterialColour.x) + " " + to_string(m_MaterialColour.y) + " " + to_string(m_MaterialColour.z) << std::endl;
+			file << "Color: " + std::to_string(m_MaterialColour.x) + " " + std::to_string(m_MaterialColour.y) + " " + std::to_string(m_MaterialColour.z) << std::endl;
 			
 			if (m_Albedo)
 				file << m_Albedo->Path();
@@ -144,6 +181,14 @@ namespace Engine {	namespace Components {
 			if (m_Normal)
 				file << m_Normal->Path();
 			file << std::endl;
+
+			if (m_Metalic)
+				file << m_Metalic->Path();
+			file << std::endl;
+
+			if (m_Roughness)
+				file << m_Roughness->Path();
+			file << std::endl;
 		}
 		
 	private:
@@ -151,8 +196,11 @@ namespace Engine {	namespace Components {
 		Texture* m_Albedo;
 		Texture* m_Specular;
 		Texture* m_Normal;
+		Texture* m_Metalic;
+		Texture* m_Roughness;
 
 		glm::vec3 m_MaterialColour;
+		glm::vec3 m_MaterialSpecular;
 
 	};
 } }

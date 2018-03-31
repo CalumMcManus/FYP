@@ -1,6 +1,6 @@
 #include <Engine\Graphics\SkyBox.h>
 
-Engine::graphics::SkyBox::SkyBox(const char * texturePath, const char *shaderPath)
+Engine::graphics::SkyBox::SkyBox(std::string texturePath, const char *shaderPath)
 {
 	m_Shader = new Shader("../Assets/Shaders/basicCubeMap.vert", "../Assets/Shaders/basicCubeMap.frag");
 	m_cCubemapPath = texturePath;
@@ -47,9 +47,10 @@ Engine::graphics::SkyBox::SkyBox(const char * texturePath, const char *shaderPat
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Indecies.size() * sizeof(GLuint), &m_Indecies[0], GL_STATIC_DRAW);
 	
+	
 	glActiveTexture(GL_TEXTURE2);
 	glGenTextures(1, &m_Texture);
-	
+
 
 	GLuint sides[] =
 	{
@@ -67,7 +68,7 @@ Engine::graphics::SkyBox::SkyBox(const char * texturePath, const char *shaderPat
 		int width, height, nrComponents;
 		unsigned char* textureData = stbi_load(TextureDir.c_str(), &width, &height, &nrComponents, 3);
 		if (textureData)
-		{			
+		{
 			glBindTexture(GL_TEXTURE_CUBE_MAP, m_Texture);
 			glTexImage2D(sides[i],
 				0,
@@ -95,12 +96,12 @@ Engine::graphics::SkyBox::SkyBox(const char * texturePath, const char *shaderPat
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-
 }
 
 Engine::graphics::SkyBox::~SkyBox()
 {
 	delete m_VertexArray;
+	glDeleteTextures(1, &m_Texture);
 }
 
 void Engine::graphics::SkyBox::Draw(glm::mat4 proj, glm::mat4 viewRot) const
@@ -134,4 +135,57 @@ void Engine::graphics::SkyBox::Draw(glm::mat4 proj, glm::mat4 viewRot) const
 		glCullFace(GL_BACK);
 		glActiveTexture(GL_TEXTURE0);
 	}
+}
+
+void Engine::graphics::SkyBox::ChangeTexture(std::string texturePath)
+{
+	m_cCubemapPath = texturePath;
+	glDeleteTextures(1, &m_Texture);
+	glActiveTexture(GL_TEXTURE2);
+	glGenTextures(1, &m_Texture);
+
+
+	GLuint sides[] =
+	{
+		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+	};
+
+	for (int i = 0; i < 6; i++)
+	{
+		std::string TextureDir = m_cCubemapPath + std::to_string(i + 1) + ".bmp";
+		int width, height, nrComponents;
+		unsigned char* textureData = stbi_load(TextureDir.c_str(), &width, &height, &nrComponents, 3);
+		if (textureData)
+		{
+			glBindTexture(GL_TEXTURE_CUBE_MAP, m_Texture);
+			glTexImage2D(sides[i],
+				0,
+				GL_RGB,
+				width,
+				height,
+				0,
+				GL_RGB,
+				GL_UNSIGNED_BYTE,
+				textureData);
+
+			stbi_image_free(textureData);
+		}
+		else
+		{
+			std::cout << "Texture failed to load from: " << m_cCubemapPath << std::endl;
+			stbi_image_free(textureData);
+		}
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }

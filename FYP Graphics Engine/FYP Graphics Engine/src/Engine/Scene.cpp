@@ -13,13 +13,13 @@ Engine::Scene::Scene(GLFWEngine* enginePointer, bool load)
 	m_TransformWindow = new UI::TransformWindow(enginePointer);
 	m_MaterialWindow = new UI::MaterialWindow(enginePointer);
 	m_DefaultShader->enable();
-
-	m_PostProcessing = new graphics::PostProcessingStack(enginePointer, load);
+	m_SkyBox = new graphics::SkyBox("../Assets/Textures/Cubemap_2/", "");
+	m_PostProcessing = new graphics::PostProcessingStack(enginePointer, m_SkyBox, load);
 	
 	m_LightObject = new GameObject();
 	m_LightObject->addComponent(new ModelRenderer("../Assets/Models/Light.obj"));
-
 	
+
 }
 
 Engine::Scene::~Scene()
@@ -180,6 +180,7 @@ void Engine::Scene::Save(std::string savePath)
 	std::ofstream outputFile;
 	outputFile.open(filePath, std::ofstream::out | std::ofstream::trunc);
 
+	outputFile << m_SkyBox->Path() << std::endl;
 	for (unsigned int i = 0; i < v_Objects.size(); i++)
 	{
 		outputFile << "#GOBEGIN" << std::endl;
@@ -223,12 +224,15 @@ void Engine::Scene::Load(std::string loadPath)
 	std::cout << "Loading..." << std::endl;
 	if (inputFile.is_open())
 	{
+		std::getline(inputFile, line);
+		std::string s;
+		std::istringstream iss(line);
+
+		m_SkyBox->ChangeTexture(line.c_str());
 		while (!inputFile.eof())
 		{
 			std::getline(inputFile, line);
-			std::string s;
-			std::istringstream iss(line);
-
+			iss = std::istringstream(line);
 			iss >> s;
 
 			if (s == "#GOBEGIN")
@@ -300,6 +304,14 @@ void Engine::Scene::Load(std::string loadPath)
 						std::getline(inputFile, line);
 						if (line.size() > 0)
 							mat->AddNormal(line.c_str());
+
+						std::getline(inputFile, line);
+						if (line.size() > 0)
+							mat->AddMetal(line.c_str());
+
+						std::getline(inputFile, line);
+						if (line.size() > 0)
+							mat->AddRough(line.c_str());
 
 						obj->addComponent(mat);
 

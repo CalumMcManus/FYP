@@ -9,12 +9,11 @@ uniform float RADIUS = 0.75;
 //softness of our vignette, between 0.0 and 1.0
 uniform float SOFTNESS = 0.45;
 
-
-const vec2 resolution = vec2(1280, 720);
+uniform vec2 resolution = vec2(1280, 720);
 void main()
 {
    // outColor = texture(texFramebuffer, Texcoord);
-    //  outColor = texture( texFramebuffer, Texcoord+ 0.005*vec2( sin(time+1280.0*Texcoord.x),cos(time+720.0*Texcoord.y)));
+    //  outColor = texture( texFramebuffer, Texcoord+ 0.005*vec2( sin(time+resolution.x*Texcoord.x),cos(time+resolution.y*Texcoord.y)));
 	
 	//sample our texture
 	vec4 texColor = texture2D(texFramebuffer, Texcoord);

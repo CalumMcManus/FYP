@@ -15,8 +15,8 @@ Engine::graphics::GBuffer::GBuffer(Window * window, int samples, Shader * shader
 
 		createBufferMultisample(GL_TEXTURE1, GL_RGB16F, m_PositionTexture); //Position
 		createBufferMultisample(GL_TEXTURE2, GL_RGB16F, m_NormalTexture); //Normal
-		createBufferMultisample(GL_TEXTURE3, GL_RGBA8, m_Texture); //Color
-		createBufferMultisample(GL_TEXTURE3, GL_RGB8, m_UnlitTexture); //Color
+		createBufferMultisample(GL_TEXTURE3, GL_RGBA, m_Texture); //Color
+		createBufferMultisample(GL_TEXTURE3, GL_RGB, m_AdditioalComp); //Color
 		createBufferMultisample(GL_TEXTURE4, GL_DEPTH_COMPONENT32F, m_DepthTexture); //Color
 
 		
@@ -24,12 +24,12 @@ Engine::graphics::GBuffer::GBuffer(Window * window, int samples, Shader * shader
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_PositionTexture, 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D_MULTISAMPLE, m_NormalTexture, 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D_MULTISAMPLE, m_Texture, 0);	
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D_MULTISAMPLE, m_UnlitTexture, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D_MULTISAMPLE, m_AdditioalComp, 0);
 
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_PositionTexture, 0);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_NormalTexture, 0);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_Texture, 0);
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, m_UnlitTexture, 0);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, m_AdditioalComp, 0);
 		//glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_DepthTexture, 0);
 
 		GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
@@ -52,8 +52,8 @@ Engine::graphics::GBuffer::GBuffer(Window * window, int samples, Shader * shader
 
 		createBuffer(GL_TEXTURE1, GL_RGB16F, m_PositionTexture); //Position
 		createBuffer(GL_TEXTURE2, GL_RGB16F, m_NormalTexture); //Normal
-		createBuffer(GL_TEXTURE3, GL_RGBA8, m_Texture); //Color
-		createBuffer(GL_TEXTURE3, GL_RGB8, m_UnlitTexture); //Color
+		createBuffer(GL_TEXTURE3, GL_RGBA, m_Texture); //Color
+		createBuffer(GL_TEXTURE3, GL_RGB, m_AdditioalComp); //Color
 		glGenTextures(1, &m_DepthTexture);
 		glBindTexture(GL_TEXTURE_2D, m_DepthTexture);
 		glTexImage2D(
@@ -67,13 +67,13 @@ Engine::graphics::GBuffer::GBuffer(Window * window, int samples, Shader * shader
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_PositionTexture, 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_NormalTexture, 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_Texture, 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_UnlitTexture, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_AdditioalComp, 0);
 		
 
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_PositionTexture, 0);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_NormalTexture, 0);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_Texture, 0);
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, m_UnlitTexture, 0);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, m_AdditioalComp, 0);
 		//glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_DepthTexture, 0);
 
 		GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };

@@ -26,6 +26,7 @@ namespace Engine { namespace graphics {
 		//Init nanogui
 		Screen();
 		initialize(m_Window, false);
+		
 
 	}
 

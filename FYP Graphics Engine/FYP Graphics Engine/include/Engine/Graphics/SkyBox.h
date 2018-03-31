@@ -22,7 +22,7 @@ namespace Engine {
 			Skyboxes do not receive light and also require the use of a samplerCube in the shader,
 			due to this the skybox holds its own shader.
 			*/
-			SkyBox(const char* texturePath, const char* shaderPath);
+			SkyBox(std::string texturePath, const char* shaderPath);
 			//! SkyBox Destructor.
 			/*!
 			Cleans up memory in the class
@@ -33,6 +33,12 @@ namespace Engine {
 			Used to render the skybox
 			*/
 			void Draw(glm::mat4 proj, glm::mat4 viewRot) const;
+
+			void ChangeTexture(std::string texturePath);
+
+			std::string Path() { return m_cCubemapPath; };
+
+			GLuint GetTexture() { return m_Texture; }
 		private:
 			//! Private VertexArray pointer variable.
 			/*! Holds the memory alocation of the VertexArray for drawing the skybox */
@@ -45,7 +51,7 @@ namespace Engine {
 			Shader* m_Shader;
 			//! Private const char pointer variable.
 			/*! Holds the memory alocation of the file path to the cubemap folder */
-			const char * m_cCubemapPath;
+			std::string m_cCubemapPath;
 
 			std::vector<GLuint> m_Indecies;
 			GLuint EBO;

@@ -1,8 +1,9 @@
 #include <Engine\Graphics\postProcessingStack.h>
 
-Engine::graphics::PostProcessingStack::PostProcessingStack(GLFWEngine * enginePointer, bool load)
+Engine::graphics::PostProcessingStack::PostProcessingStack(GLFWEngine * enginePointer, SkyBox* skyBox, bool load)
 {
 	m_EnginePointer = enginePointer;
+	m_SkyBox = skyBox;
 	//m_Lights.push_back(new Light(glm::vec3(10, 0, 0), glm::vec3(1, 0, 1), 10.0f, 3.0f));
 	//m_Lights.push_back(new Light(glm::vec3(-10, 0, 0), glm::vec3(0, 1, 1), 10.0f, 3.0f));
 	//Setup Quad VAO
@@ -90,6 +91,7 @@ void Engine::graphics::PostProcessingStack::Save(std::ofstream & file)
 	file << "BloomSigma: " + std::to_string(m_fBloomSigma) << std::endl;
 	file << "VignetteRadius: " + std::to_string(m_fVignetteRadius) << std::endl;
 	file << "VignetteSoft: " + std::to_string(m_fVignetteSoftness) << std::endl;
+	file << "Outline: " + std::to_string((int)m_Outline) << std::endl;
 
 }
 void Engine::graphics::PostProcessingStack::Load(std::ifstream & file)
@@ -190,6 +192,12 @@ void Engine::graphics::PostProcessingStack::Load(std::ifstream & file)
 			iss = std::istringstream(line);
 			iss >> s;
 			iss >> m_fVignetteSoftness;
+
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> boolean;
+			m_Outline = (bool)boolean;
 		}
 	}
 	SetUpUI();
@@ -332,6 +340,9 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	glUniform3fv(glGetUniformLocation(m_SSAOShader->getID(), "samples"), 64,
 		glm::value_ptr(ssaoKernel[0]));
 	m_SSAOShader->setUniformMat4("projection", P);
+	m_SSAOShader->setUniform2f("noiseScale", glm::vec2(m_EnginePointer->m_Window->getWidth()/4, m_EnginePointer->m_Window->getHeight()/4));
+
+    
 
 	m_FrameBufferAO->Bind();
 	glBindVertexArray(m_QuadVAO);
@@ -339,9 +350,10 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	
 	m_HBlurBufferAO->Bind();
-	m_HBlurBuffer->GetShader()->enable();
-	m_HBlurBuffer->GetShader()->setUniform1f("sigmaValue", 3);
-	m_HBlurBuffer->GetShader()->setUniform1i("kernalSize", 25);	
+	m_HBlurBufferAO->GetShader()->enable();
+	m_HBlurBufferAO->GetShader()->setUniform1f("sigmaValue", 3);
+	m_HBlurBufferAO->GetShader()->setUniform1i("kernalSize", 25);
+	m_HBlurBufferAO->GetShader()->setUniform2f("resolution", glm::vec2(m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight()));
 	m_EnginePointer->m_Window->Clear();
 	m_FrameBufferAO->Render();
 	
@@ -349,6 +361,7 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	m_VBlurBufferAO->GetShader()->enable();
 	m_VBlurBufferAO->GetShader()->setUniform1f("sigmaValue", 3);
 	m_VBlurBufferAO->GetShader()->setUniform1i("kernalSize", 25);	
+	m_VBlurBufferAO->GetShader()->setUniform2f("resolution", glm::vec2(m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight()));
 	m_EnginePointer->m_Window->Clear();
 	m_HBlurBufferAO->Render();
 	
@@ -396,28 +409,14 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 		glActiveTexture(GL_TEXTURE6);
 		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_MSBuffer->GetDepth());
 
-		GLint unlitLoc = glGetUniformLocation(m_AddSSAO->getID(), "gAlbedoUnlit");
-		glUniform1i(unlitLoc, 7);
+		GLint compLoc = glGetUniformLocation(m_AddSSAO->getID(), "gComponent");
+		glUniform1i(compLoc, 7);
 		glActiveTexture(GL_TEXTURE7);
-		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_MSBuffer->GetUnlit());
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_MSBuffer->GetAdditional());
 		m_AddSSAO->setUniform1i("Samples", m_iSamples);
 	}
 	else
 	{
-		GLint baseImageLoc = glGetUniformLocation(m_AddSSAO->getID(), "gAlbedoSS");
-		glUniform1i(baseImageLoc, 1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetTextureID());
-
-		GLint posLoc = glGetUniformLocation(m_AddSSAO->getID(), "gPositionSS");
-		glUniform1i(posLoc, 8);
-		glActiveTexture(GL_TEXTURE8);
-		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetPos());
-		//
-		GLint normLoc = glGetUniformLocation(m_AddSSAO->getID(), "gNormalSS");
-		glUniform1i(normLoc, 9);
-		glActiveTexture(GL_TEXTURE9);
-		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetNormal());
 		//
 		GLint ssaoLoc = glGetUniformLocation(m_AddSSAO->getID(), "ssaoTex");
 		glUniform1i(ssaoLoc, 5);
@@ -428,20 +427,41 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 		glUniform1i(depthLoc, 10);
 		glActiveTexture(GL_TEXTURE10);
 		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetDepth());
-		//
-		GLint unlitLoc = glGetUniformLocation(m_AddSSAO->getID(), "gAlbedoUnlitSS");
-		glUniform1i(unlitLoc, 11);
-		glActiveTexture(GL_TEXTURE11);
-		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetUnlit());
-		m_AddSSAO->setUniform1i("Samples", 0);
+		
+		m_AddSSAO->setUniform1i("Samples", 1);
 	}
+	//
+	GLint compLoc = glGetUniformLocation(m_AddSSAO->getID(), "gComponentSS");
+	glUniform1i(compLoc, 11);
+	glActiveTexture(GL_TEXTURE11);
+	glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetAdditional());
 
+	GLint baseImageLoc = glGetUniformLocation(m_AddSSAO->getID(), "gAlbedoSS");
+	glUniform1i(baseImageLoc, 1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetTextureID());
+
+	GLint posLoc = glGetUniformLocation(m_AddSSAO->getID(), "gPositionSS");
+	glUniform1i(posLoc, 8);
+	glActiveTexture(GL_TEXTURE8);
+	glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetPos());
+	//
+	GLint normLoc = glGetUniformLocation(m_AddSSAO->getID(), "gNormalSS");
+	glUniform1i(normLoc, 9);
+	glActiveTexture(GL_TEXTURE9);
+	glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetNormal());
+
+	GLint cubeLoc = glGetUniformLocation(m_AddSSAO->getID(), "cubeTexture");
+	glUniform1i(cubeLoc, 12);
+	glActiveTexture(GL_TEXTURE12);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_SkyBox->GetTexture());
 	
 
 	m_AddSSAO->setUniform1i("SSAO", m_SSAO);
-	
+	m_AddSSAO->setUniform1i("Outline", m_Outline);
 	m_AddSSAO->setUniform3f("viewPos", camPos);
 	m_AddSSAO->setUniformMat4("View", View);
+	m_AddSSAO->setUniformMat4("Proj", P);
 	m_AddSSAO->setUniform3f("AmbientColor", glm::vec3(m_SceneAmbient.x(), m_SceneAmbient.y(), m_SceneAmbient.z()));
 	m_AddSSAO->setUniform1f("AmbientInten", m_fAmbientInten);
 
@@ -459,7 +479,7 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	}
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	
+
 	m_LumaBuffer->Bind();
 	m_EnginePointer->m_Window->Clear();
 	m_FrameBuffer->Render();
@@ -467,6 +487,7 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	m_HBlurBuffer->GetShader()->enable();
 	m_HBlurBuffer->GetShader()->setUniform1f("sigmaValue", m_fBloomSigma);
 	m_HBlurBuffer->GetShader()->setUniform1i("kernalSize", m_iBloomKernalSize);
+	m_HBlurBuffer->GetShader()->setUniform2f("resolution", glm::vec2(m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight()));
 	m_HBlurBuffer->Bind();
 	m_EnginePointer->m_Window->Clear();
 	m_LumaBuffer->Render();
@@ -474,6 +495,7 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	m_VBlurBuffer->GetShader()->enable();
 	m_VBlurBuffer->GetShader()->setUniform1f("sigmaValue", m_fBloomSigma);
 	m_VBlurBuffer->GetShader()->setUniform1i("kernalSize", m_iBloomKernalSize);
+	m_VBlurBuffer->GetShader()->setUniform2f("resolution", glm::vec2(m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight()));
 	m_VBlurBuffer->Bind();
 	m_EnginePointer->m_Window->Clear();
 	m_HBlurBuffer->Render();
@@ -487,6 +509,7 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	m_Vignette->GetShader()->enable();
 	m_Vignette->GetShader()->setUniform1f("RADIUS", m_fVignetteRadius);
 	m_Vignette->GetShader()->setUniform1f("SOFTNESS", m_fVignetteSoftness);
+	m_Vignette->GetShader()->setUniform2f("resolution", glm::vec2(m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight()));
 	m_Vignette->Bind();
 	m_EnginePointer->m_Window->Clear();
 	m_Bloom->Render(m_FrameBuffer->GetTextureID());
@@ -566,7 +589,15 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 		}
 	});
 	lightpicker->setHeight(5);
-
+	nanogui::Button *skyBoxBtn = new nanogui::Button(m_SceneLighting, "Select Skybox");
+	skyBoxBtn->setCallback([&]
+	{
+		std::string s = FileUtils::BrowseFiles("Selected Skybox Texture");
+		s = s.substr(0, s.find_last_of("\\/"));
+		s += '/';
+		std::cout << s.c_str() << std::endl;
+		m_SkyBox->ChangeTexture(s);
+	});
 	//Post Pro
 
 	m_PostProWindow = new nanogui::Window(m_EnginePointer->m_Window, "Post Processing");
@@ -676,4 +707,8 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 		[&](bool state) { m_SSAO = !m_SSAO; }
 	);
 	cbSSAO->setChecked(m_SSAO);
+	CheckBox *cbOutline = new CheckBox(m_PostProWindow, "Outline",
+		[&](bool state) { m_Outline = !m_Outline; }
+	);
+	cbOutline->setChecked(m_Outline);
 }
