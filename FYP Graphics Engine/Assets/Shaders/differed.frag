@@ -27,6 +27,7 @@ uniform bool UseRough;
 struct Material {
 	vec3 Color;
 	vec3 Spec;
+	float Metalness;
 };
 uniform Material material;
 
@@ -80,5 +81,5 @@ void main()
 	{
 		Components.y = 0;
 	}
-	Components.z = 0; //Well be used for reflectivity
+	Components.z = material.Metalness; //Well be used for reflectivity
 } 
