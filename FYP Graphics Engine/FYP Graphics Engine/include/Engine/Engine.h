@@ -15,6 +15,8 @@ namespace Engine {
 		void Run();
 		void Resize();
 		graphics::Window* m_Window;
+
+		Project* GetProject() { return m_Project; }
 	private:
 		
 		Project* m_Project;

@@ -20,6 +20,8 @@ uniform samplerCube cubeTexture;
 
 uniform mat4 View;
 uniform mat4 Proj;
+uniform mat4 invView;
+uniform mat4 invProj;
 struct Light {
 	vec3 Pos;
 	vec3 Color;
@@ -213,14 +215,15 @@ const float reflectionSpecularFalloffExponent = 3.0;
 
 vec4 Reflection()
 {
-	mat4 invView = inverse(View);
 	Metallic = texture2D(gComponentSS, Texcoord).r;
+	float Metalness = texture(gComponentSS, Texcoord).z;
 	vec3 albedo = texture(gAlbedoSS, Texcoord).rgb;
-	if(Metallic < 0.01)
-		return vec4(1, 1, 1, 1);
+	Metallic = Metallic * Metalness;
+	//if(Metallic < 0.01)
+	//	return vec4(1, 1, 1, 1);
 		
-	vec3 viewNormal = vec3(texture2D(gNormalSS, Texcoord) * invView);
-    vec3 viewPos = textureLod(gPositionSS, Texcoord, 1).xyz;
+	vec3 viewNormal = texture(gNormalSS, Texcoord).rgb;
+    vec3 viewPos = texture(gPositionSS, Texcoord).xyz;
     
 	float spec = texture(gAlbedoSS, Texcoord).w;
 	
@@ -249,18 +252,21 @@ vec4 Reflection()
 	vec3 norm = normalize(texture2D(gNormalSS, Texcoord).rgb);
 	
 	vec3 rc = reflect(eye, norm);
-	rc = vec3(inverse(View) * vec4(rc, 0.0));
+	rc = vec3(invView * vec4(rc, 0.0));
 	
     vec3 SSR = textureLod(gAlbedoSS, coords.xy, 0).rgb * clamp(ReflectionMultiplier, 0.0, 0.9) * Fresnel;  
 	float av = (SSR.x + SSR.y + SSR.z)/3;
-	vec3 colour = mix(texture(cubeTexture, rc).rgb, SSR , 0.6);
+	vec3 colour = mix(texture(cubeTexture, rc).rgb, SSR , clamp(ReflectionMultiplier, 0.0, 0.9));
 
+	//if(SSR.r < 0.01 && SSR.g < 0.01 && SSR.b < 0.01)
+	//	return texture(cubeTexture, rc);
+	
 	return vec4(colour, Metallic);
 }
 vec3 PositionFromDepth(float depth) {
     float z = depth * 2.0 - 1.0;
     vec4 clipSpacePosition = vec4(Texcoord * 2.0 - 1.0, z, 1.0);
-    vec4 viewSpacePosition = inverse(Proj) * clipSpacePosition;
+    vec4 viewSpacePosition = invProj * clipSpacePosition;
 
     viewSpacePosition /= viewSpacePosition.w;
 

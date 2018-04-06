@@ -38,7 +38,7 @@ Engine::graphics::PostProcessingStack::PostProcessingStack(GLFWEngine * enginePo
 		);
 		sample = glm::normalize(sample);
 		sample *= randomFloats(generator);
-		float scale = (float)i / 64.0;
+		float scale = (float)i / 64.0f;
 		scale = lerp(0.1f, 1.0f, scale * scale);
 		sample *= scale;
 		ssaoKernel.push_back(sample);
@@ -161,12 +161,12 @@ void Engine::graphics::PostProcessingStack::Load(std::ifstream & file)
 			iss = std::istringstream(line);
 			iss >> s;
 			iss >> boolean;
-			m_MS = (bool)boolean;
+			m_MS = boolean;
 			std::getline(file, line);
 			iss = std::istringstream(line);
 			iss >> s;
 			iss >> boolean;
-			m_SSAO = (bool)boolean;
+			m_SSAO = boolean;
 
 			std::getline(file, line);
 			iss = std::istringstream(line);
@@ -197,7 +197,7 @@ void Engine::graphics::PostProcessingStack::Load(std::ifstream & file)
 			iss = std::istringstream(line);
 			iss >> s;
 			iss >> boolean;
-			m_Outline = (bool)boolean;
+			m_Outline = boolean;
 		}
 	}
 	SetUpUI();
@@ -218,7 +218,6 @@ void Engine::graphics::PostProcessingStack::SetUp()
 	delete m_FinalBlueAO; m_FinalBlueAO = nullptr;
 	delete m_Bloom; m_Bloom = nullptr;
 
-		
 	m_MSBuffer = new graphics::GBuffer(m_EnginePointer->m_Window, m_iSamples, m_NoFilter);
 	m_SSBuffer = new graphics::GBuffer(m_EnginePointer->m_Window, 1, m_NoFilter);
 
@@ -351,7 +350,7 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	
 	m_HBlurBufferAO->Bind();
 	m_HBlurBufferAO->GetShader()->enable();
-	m_HBlurBufferAO->GetShader()->setUniform1f("sigmaValue", 3);
+	m_HBlurBufferAO->GetShader()->setUniform1f("sigmaValue", 2);
 	m_HBlurBufferAO->GetShader()->setUniform1i("kernalSize", 25);
 	m_HBlurBufferAO->GetShader()->setUniform2f("resolution", glm::vec2(m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight()));
 	m_EnginePointer->m_Window->Clear();
@@ -359,7 +358,7 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	
 	m_VBlurBufferAO->Bind();
 	m_VBlurBufferAO->GetShader()->enable();
-	m_VBlurBufferAO->GetShader()->setUniform1f("sigmaValue", 3);
+	m_VBlurBufferAO->GetShader()->setUniform1f("sigmaValue", 2);
 	m_VBlurBufferAO->GetShader()->setUniform1i("kernalSize", 25);	
 	m_VBlurBufferAO->GetShader()->setUniform2f("resolution", glm::vec2(m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight()));
 	m_EnginePointer->m_Window->Clear();
@@ -462,6 +461,8 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	m_AddSSAO->setUniform3f("viewPos", camPos);
 	m_AddSSAO->setUniformMat4("View", View);
 	m_AddSSAO->setUniformMat4("Proj", P);
+	m_AddSSAO->setUniformMat4("invView", glm::inverse(View));
+	m_AddSSAO->setUniformMat4("invProj", glm::inverse(P));
 	m_AddSSAO->setUniform3f("AmbientColor", glm::vec3(m_SceneAmbient.x(), m_SceneAmbient.y(), m_SceneAmbient.z()));
 	m_AddSSAO->setUniform1f("AmbientInten", m_fAmbientInten);
 

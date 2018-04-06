@@ -42,7 +42,7 @@ bool Engine::Project::SetUpProjectDirectories()
 	currentDirectory += "Assets/";
 	FileUtils::CreateFolder(currentDirectory, "Models");
 	FileUtils::CreateFolder(currentDirectory, "Textures");
-	FileUtils::CreateFolder(currentDirectory, "Shaders");
+	//FileUtils::CreateFolder(currentDirectory, "Shaders");
 
 
 	return false;
@@ -52,7 +52,25 @@ void Engine::Project::AddModel()
 {
 	GameObject* tempObj = new GameObject();
 	tempObj->addComponent(new Material(new graphics::Shader("../Assets/Shaders/differed.vert", "../Assets/Shaders/differed.frag")));
-	tempObj->addComponent(new ModelRenderer(FileUtils::BrowseFiles("Select Model").c_str()));
+
+	std::string modelPath = FileUtils::BrowseFiles("Select Model");
+	std::set<char> delims{ '\\', '/' };
+	std::string fileName = FileUtils::splitpath(modelPath, delims).back();
+	std::string newPath = m_Directory + "Assets/Models/" + fileName;
+	std::cout << newPath << std::endl;
+
+	if (FileUtils::Exists(newPath))
+	{
+		tempObj->addComponent(new ModelRenderer(newPath.c_str()));
+	}
+	else
+	{
+		//Copy file over
+		FileUtils::TransferFile(modelPath, newPath);
+		tempObj->addComponent(new ModelRenderer(newPath.c_str()));
+	}
+
+	
 	tempObj->addComponent(new Transform(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
 	m_Scene->AddObject(tempObj);
 }

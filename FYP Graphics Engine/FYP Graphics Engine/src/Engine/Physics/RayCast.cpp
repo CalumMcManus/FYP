@@ -25,7 +25,7 @@ std::vector<glm::vec3>  Engine::Physics::RayCast::CastRay(glm::vec3 origin, glm:
 {
 	glm::vec3 vDir = ViewToWorldSpace(screenPos, projection, view, window);
 	float t = 1;
-	int iterations = 50;
+	int iterations = 100;
 	float betweenDist = distance / iterations;
 	//Rays use O+dt
 	glm::vec3 rayPoint = origin + vDir*t;

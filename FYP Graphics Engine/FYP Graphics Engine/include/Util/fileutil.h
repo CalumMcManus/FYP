@@ -6,6 +6,11 @@
 #include <windows.h>
 #include <shlobj.h>
 #include <Commdlg.h>
+#include <set>
+#include <iostream>
+#include <fstream>
+#include <vector>
+
 namespace Engine {
 	class FileUtils
 	{
@@ -28,12 +33,6 @@ namespace Engine {
 			std::string result(data);
 			delete[] data;
 			return result;
-		}
-
-		static std::string read_shader(const char* fileName)
-		{
-			const char * path = "../../Shaders/" + (char)fileName;
-			return read_file(path);
 		}
 
 		static __int64 FileSize(const char* name)
@@ -126,6 +125,53 @@ namespace Engine {
 				std::cout << "Failed to created folder at: " << folderPath << " Error: " << GetLastError() << std::endl;
 				return false;
 			}
+		}
+
+		inline static bool Exists(const std::string& name) {
+			if (FILE *file = fopen(name.c_str(), "r")) {
+				fclose(file);
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+
+		static std::vector<std::string> splitpath(
+			const std::string& str
+			, const std::set<char> delimiters)
+		{
+			std::vector<std::string> result;
+
+			char const* pch = str.c_str();
+			char const* start = pch;
+			for (; *pch; ++pch)
+			{
+				if (delimiters.find(*pch) != delimiters.end())
+				{
+					if (start != pch)
+					{
+						std::string str(start, pch);
+						result.push_back(str);
+					}
+					else
+					{
+						result.push_back("");
+					}
+					start = pch + 1;
+				}
+			}
+			result.push_back(start);
+
+			return result;
+		}
+
+		static void TransferFile(std::string file1, std::string file2)
+		{
+			std::ifstream ifs(file1, std::ios::binary);
+			std::ofstream ofs(file2, std::ios::binary);
+
+			ofs << ifs.rdbuf();
 		}
 
 	};

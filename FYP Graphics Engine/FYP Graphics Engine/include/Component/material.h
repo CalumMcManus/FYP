@@ -112,10 +112,14 @@ namespace Engine {	namespace Components {
 		const void SetSpecColour(glm::vec3 colour) { m_MaterialSpecular = colour; }
 		const glm::vec3 GetSpecColour() const { return m_MaterialSpecular; }
 
+		const void SetMetalness(float metalness) { m_fMetalness = metalness; }
+		const float GetMetalness() const { return m_fMetalness; }
+
 		void BindTextures()
 		{
 			m_Shader->setUniform3f("material.Color", m_MaterialColour);
 			m_Shader->setUniform3f("material.Spec", m_MaterialSpecular);
+			m_Shader->setUniform1f("material.Metalness", m_fMetalness);
 			if (m_Albedo)
 			{
 				m_Shader->setUniform1i("UseTexture", GL_TRUE);
@@ -189,6 +193,8 @@ namespace Engine {	namespace Components {
 			if (m_Roughness)
 				file << m_Roughness->Path();
 			file << std::endl;
+
+			file << "Metalness: " << m_fMetalness << std::endl;
 		}
 		
 	private:
@@ -201,6 +207,7 @@ namespace Engine {	namespace Components {
 
 		glm::vec3 m_MaterialColour;
 		glm::vec3 m_MaterialSpecular;
+		float m_fMetalness;
 
 	};
 } }

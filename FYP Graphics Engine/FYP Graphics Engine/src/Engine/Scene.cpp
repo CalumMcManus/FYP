@@ -3,7 +3,6 @@
 Engine::Scene::Scene(GLFWEngine* enginePointer, bool load)
 {
 	m_EnginePointer = enginePointer;
-	
 
 	V = glm::lookAt(
 		camPos,
@@ -18,8 +17,6 @@ Engine::Scene::Scene(GLFWEngine* enginePointer, bool load)
 	
 	m_LightObject = new GameObject();
 	m_LightObject->addComponent(new ModelRenderer("../Assets/Models/Light.obj"));
-	
-
 }
 
 Engine::Scene::~Scene()
@@ -29,11 +26,22 @@ Engine::Scene::~Scene()
 void Engine::Scene::Update(bool orbit)
 {
 	
-	if (!orbit)return;
 	x = radius*cos(theta);
 	y = radius*sin(theta);
-	theta += step;
-	if (yAxis)
+
+	if(glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_LEFT))
+		theta += step;
+	if (glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_RIGHT))
+		theta -= step;
+	if (glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_UP))
+		fYAxis += step*20;
+	if (glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_DOWN))
+		fYAxis -= step*20;
+	if (glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_RIGHT_CONTROL))
+		radius += step*20;
+	if (glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_RIGHT_SHIFT))
+		radius -= step*20;
+	/*if (yAxis)
 	{
 		fYAxis -= step * 10;
 		if (fYAxis < -4)
@@ -44,12 +52,12 @@ void Engine::Scene::Update(bool orbit)
 		fYAxis += step * 10;
 		if (fYAxis > 4)
 			yAxis = !yAxis;
-	}
+	}*/
 	camPos = glm::vec3(x, fYAxis + 5, y);
 
 	V = glm::lookAt(
 		camPos,
-		glm::vec3(0, 6, 0),
+		glm::vec3(0, 0, 0),
 		glm::vec3(0, 1, 0)
 	);
 }
@@ -61,7 +69,7 @@ void Engine::Scene::Render()
 	{
 		glm::dvec2 mousePos;
 		glfwGetCursorPos(&m_EnginePointer->m_Window->getGLFWWindow(), &mousePos.x, &mousePos.y);
-		std::vector<glm::vec3> temp = Physics::RayCast::CastRay(camPos, mousePos, 20, P, V, m_EnginePointer->m_Window);
+		std::vector<glm::vec3> temp = Physics::RayCast::CastRay(camPos, mousePos, 100, P, V, m_EnginePointer->m_Window);
 		bool selected = false;
 		
 		for (int i = 0; i < temp.size(); i++)
@@ -313,6 +321,12 @@ void Engine::Scene::Load(std::string loadPath)
 						if (line.size() > 0)
 							mat->AddRough(line.c_str());
 
+						std::getline(inputFile, line);
+						iss = std::istringstream(line);
+						iss >> s;
+						iss >> f;
+						mat->SetMetalness(f);
+						std::cout << line << " " << s << " " << f << std::endl;
 						obj->addComponent(mat);
 
 					}

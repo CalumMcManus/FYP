@@ -14,6 +14,8 @@ namespace Engine { namespace UI {
 
 			bool IsMouseOver() { return m_MaterialWindow->focused(); }
 		private:
+			GLFWEngine* m_EnginePointer;
+
 			bool m_bHasAlbedo = false;
 			bool m_bHasSpecular = false;
 			bool m_bHasNormal = false;
@@ -30,6 +32,13 @@ namespace Engine { namespace UI {
 
 			nanogui::ColorPicker* m_MaterialColor;
 			nanogui::ColorPicker* m_MaterialSpecular;
+
+			std::string GetTexture(std::string title);
+
+			nanogui::Widget* m_ReflectWidget;
+			nanogui::Slider* m_ReflectSlider;
+			nanogui::TextBox* m_TextboxReflect;
+			float m_fReflect = 0;
 			
 
 		};

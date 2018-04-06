@@ -21,6 +21,8 @@ namespace Engine
 		void Load();
 
 		void Init();
+
+		std::string GetProjectDirectory() { return m_Directory; };
 	private:
 		std::string m_Directory = "./";
 		bool CreateConfigFile(std::string path);

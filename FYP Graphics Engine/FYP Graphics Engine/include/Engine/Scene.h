@@ -67,7 +67,7 @@ namespace Engine
 
 		bool yAxis = true;
 		float fYAxis = 0;
-		glm::vec3 camPos = glm::vec3(0, 6, -15);
+		glm::vec3 camPos = glm::vec3(15, 6, 0);
 
 		
 
