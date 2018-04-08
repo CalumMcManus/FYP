@@ -10,67 +10,97 @@
 #include <fstream>
 namespace Engine {	namespace Components {
 
+	//! Material 
+	/*!
+	Holds all imfomation regarding an object's material.
+	Inherits from Component.
+	Contained in the Engine::Components namespace.
+	*/
 	class Material : public Component
 	{
 	public:
+		//! Material Contructor
+		/*!
+		Sets up material shader
+		\param shader Material Shader
+		*/
 		Material(graphics::Shader* shader) : m_Shader(shader) {};
+		//! The Update member function
+		/*!
+		Function for Updating components each frame
+		\param deltaTime float Time passed since last frame
+		*/
 		void Update(float deltaTime) override {};
+		//! The Message member function
+		/*!
+		Function for Sending messages to components
+		\param message const char pointer Message
+		*/
 		void Message(const char* message) override {};
 
 
-		void ReadShader()
-		{
-			std::string vertString = m_Shader->getVertString();
-			std::string fragString = m_Shader->getFragString();
-			std::string word;
-			std::vector<std::string> uniforms;
+		//void ReadShader()
+		//{
+		//	std::string vertString = m_Shader->getVertString();
+		//	std::string fragString = m_Shader->getFragString();
+		//	std::string word;
+		//	std::vector<std::string> uniforms;
 
-			std::istringstream iss(vertString);
+		//	std::istringstream iss(vertString);
 
-			for (std::string line; std::getline(iss, line); )
-			{
-				std::istringstream lineStream(line);
-				lineStream >> word;
+		//	for (std::string line; std::getline(iss, line); )
+		//	{
+		//		std::istringstream lineStream(line);
+		//		lineStream >> word;
 
-				if (word == "uniform")
-				{
-					lineStream >> word;
-					//std::cout << "Type: " << word << " ";
-					lineStream >> word;
-					//std::cout << "Name: " << word << endl;
-					word.erase(std::remove(word.begin(), word.end(), ';'), word.end());
-					if(std::find(uniforms.begin(), uniforms.end(), word) == uniforms.end())
-						uniforms.push_back(word);
-				}
-			}
+		//		if (word == "uniform")
+		//		{
+		//			lineStream >> word;
+		//			//std::cout << "Type: " << word << " ";
+		//			lineStream >> word;
+		//			//std::cout << "Name: " << word << endl;
+		//			word.erase(std::remove(word.begin(), word.end(), ';'), word.end());
+		//			if(std::find(uniforms.begin(), uniforms.end(), word) == uniforms.end())
+		//				uniforms.push_back(word);
+		//		}
+		//	}
 
-			iss = std::istringstream(fragString);
+		//	iss = std::istringstream(fragString);
 
-			for (std::string line; std::getline(iss, line); )
-			{
-				std::istringstream lineStream(line);
-				lineStream >> word;
+		//	for (std::string line; std::getline(iss, line); )
+		//	{
+		//		std::istringstream lineStream(line);
+		//		lineStream >> word;
 
-				if (word == "uniform")
-				{
-					lineStream >> word;
-					//std::cout << "Type: " << word << " ";
-					lineStream >> word;
-					//std::cout << "Name: " << word << endl;
-					word.erase(std::remove(word.begin(), word.end(), ';'), word.end());
-					if (std::find(uniforms.begin(), uniforms.end(), word) == uniforms.end())
-						uniforms.push_back(word);
-				}
-			}
+		//		if (word == "uniform")
+		//		{
+		//			lineStream >> word;
+		//			//std::cout << "Type: " << word << " ";
+		//			lineStream >> word;
+		//			//std::cout << "Name: " << word << endl;
+		//			word.erase(std::remove(word.begin(), word.end(), ';'), word.end());
+		//			if (std::find(uniforms.begin(), uniforms.end(), word) == uniforms.end())
+		//				uniforms.push_back(word);
+		//		}
+		//	}
 
-			for (int i = 0; i < uniforms.size(); i++)
-			{
-				std::cout << "Name: " << uniforms[i] << std::endl;
-			}
-		}
+		//	for (int i = 0; i < uniforms.size(); i++)
+		//	{
+		//		std::cout << "Name: " << uniforms[i] << std::endl;
+		//	}
+		//}
+
+		//! The ChangeShader member function
+		/*!
+		Changes material shader to a given shader
+		\param shader Material Shader
+		*/
 		const void ChangeShader(graphics::Shader* shader) { m_Shader = shader; };
 
-		//Get, Set and Remove
+		/** @defgroup GetSets For Textures
+		*  Get, Add and Remove functions for all textures
+		*  @{
+		*/
 		const void AddAlbedo(const char* filePath)
 		{
 			m_Albedo = new Texture(filePath);
@@ -114,7 +144,12 @@ namespace Engine {	namespace Components {
 
 		const void SetMetalness(float metalness) { m_fMetalness = metalness; }
 		const float GetMetalness() const { return m_fMetalness; }
+		/** @} */ //
 
+		//! The BindTextures member function
+		/*!
+		Binds all values and textures and passes them to the material shader
+		*/
 		void BindTextures()
 		{
 			m_Shader->setUniform3f("material.Color", m_MaterialColour);
@@ -168,7 +203,11 @@ namespace Engine {	namespace Components {
 			}
 		
 		}
-
+		//! The Save member function
+		/*!
+		Saves Material settings and fiel paths to the save text file
+		\param file ofstream File stream to open save file
+		*/
 		void Save(std::ofstream& file)
 		{
 			file << "#Material" << std::endl;
@@ -198,15 +237,32 @@ namespace Engine {	namespace Components {
 		}
 		
 	private:
+		//! Private Shader pointer.
+		/*! Material shader*/
 		graphics::Shader* m_Shader;
+		//! Private Texture pointer.
+		/*! Colour Texture*/
 		Texture* m_Albedo;
+		//! Private Texture pointer.
+		/*! Specular Texture*/
 		Texture* m_Specular;
+		//! Private Texture pointer.
+		/*! Normal Texture*/
 		Texture* m_Normal;
+		//! Private Texture pointer.
+		/*! Metalic Texture*/
 		Texture* m_Metalic;
+		//! Private Texture pointer.
+		/*! Roughness Texture*/
 		Texture* m_Roughness;
-
+		//! Private glm::vec3 variable.
+		/*! Material Colour*/
 		glm::vec3 m_MaterialColour;
+		//! Private glm::vec3 variable.
+		/*! Material Specular Colour*/
 		glm::vec3 m_MaterialSpecular;
+		//! Private float variable.
+		/*! Material Metalness value (used for reflections)*/
 		float m_fMetalness;
 
 	};

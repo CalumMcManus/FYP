@@ -6,10 +6,20 @@
 #include <iostream>
 namespace Engine {
 	namespace Components {
-
+		//! Texture 
+		/*!
+		Holds all imfomation regarding a texture for displaying on a model
+		Inherits from Component.
+		Contained in the Engine::Components namespace.
+		*/
 		class Texture : public Component
 		{
 		public:
+			//! ModelRenderer Contructor
+			/*!
+			Loads and sets up Texture file
+			\param filePath File path of texture
+			*/
 			Texture(const char* filePath) 
 			{ 
 				m_Path = filePath;
@@ -45,13 +55,34 @@ namespace Engine {
 					stbi_image_free(textureData);
 				}
 			};
+			//! Texture Destructor
+			/*!
+			Cleans up memory in the class
+			*/
 			~Texture()
 			{
 				glDeleteTextures(1, &m_TextureID);
 			};
+			//! The Update member function
+			/*!
+			Function for Updating components each frame
+			\param deltaTime float Time passed since last frame
+			*/
 			void Update(float deltaTime) override {};
+			//! The Message member function
+			/*!
+			Function for Sending messages to components
+			\param message const char pointer Message
+			*/
 			void Message(const char* message) override {};
-
+			//! The bindTexture member function
+			/*!
+			Binds this texture to the given shader
+			\param shader Shader pointer from material
+			\param activeTex GLenum Active Texture Enum
+			\param id int Active Texture ID
+			\param textureName const char* Name of texture in shader
+			*/
 			void bindTexture(graphics::Shader* shader, GLenum activeTex, int id, const char* textureName) 
 			{ 	
 				GLint baseImageLoc = glGetUniformLocation(shader->getID(), textureName);
@@ -59,10 +90,22 @@ namespace Engine {
 				glActiveTexture(activeTex);
 				glBindTexture(GL_TEXTURE_2D, m_TextureID); 
 			}
+			//! The getTextureID member function
+			/*!
+			Returns the texture ID
+			*/
 			GLuint getTextureID() { return m_TextureID; }
+			//! The Path member function
+			/*!
+			Returns the file path of the texture
+			*/
 			const std::string Path() const { return m_Path; }
 		private:
+			//! Private GLuint variable.
+			/*! Component Texture ID */
 			GLuint m_TextureID;
+			//! Private string variable.
+			/*! Path to texture file */
 			std::string m_Path;
 
 		};

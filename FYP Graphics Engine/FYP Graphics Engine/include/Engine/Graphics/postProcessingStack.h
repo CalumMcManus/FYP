@@ -124,52 +124,83 @@ namespace Engine { namespace graphics {
 		*/
 		void Load(std::ifstream& file);
 	private:
+		//! Private vector of light pointers.
+		/*! Contains all the lights in the scene */
 		std::vector<Light*> m_Lights;
+		//! Private light pointer.
+		/*! Contains the currently selected light */
 		Light *m_SelectedLight;
+		//! The SetUp member function
+		/*!
+		Sets up all Frame Buffers including the GBuffer.
+		Also used for cleanig up memory for recreating buffers.
+		*/
 		void SetUp();
+		//! Private Bool variable.
+		/*! Is true if Multisampling is enabled*/
 		bool m_MS = false;
+		//! Private Bool variable.
+		/*! Is true if Ambient Occlution is enabled*/
 		bool m_SSAO = false;
+		//! Private Bool variable.
+		/*! Is true if Outline is enabled*/
 		bool m_Outline = false;
-		//Multi-Sample
+
+		//! Private GBuffer pointer.
+		/*! Multisampled GBuffer*/
 		graphics::GBuffer* m_MSBuffer;
-		//Multi-Sample
+		//! Private GBuffer pointer.
+		/*! Single sample GBuffer */
 		graphics::GBuffer* m_SSBuffer;
-		//No Filter
+		//! Private FrameBuffer pointer.
+		/*! No Filter FrameBuffer storing screen infomation for PostProcessing effect */
 		graphics::FrameBuffer* m_FrameBuffer;
-		//Grey Scale
+		//! Private FrameBuffer pointer.
+		/*! Greyscale filter using Luma convertion */
 		graphics::FrameBuffer* m_LumaBuffer;
-		//Horizontal Blur
+		//! Private FrameBuffer pointer.
+		/*! Horizontal Gaussian blur filter */
 		graphics::FrameBuffer* m_HBlurBuffer;
-		//Vertical Blur
+		//! Private FrameBuffer pointer.
+		/*! Vertical Gaussian blur filter */
 		graphics::FrameBuffer* m_VBlurBuffer;
-		//Combine blurs and no filter to make bloom
+		//! Private FrameBuffer pointer.
+		/*! Combines the base colour texture with bloom filter */
 		graphics::CombineFilter* m_Bloom;
-		//Vignette filter
+		//! Private FrameBuffer pointer.
+		/*! Vignette Filter */
 		graphics::FrameBuffer* m_Vignette;
 
+		//! Private Shader pointer.
+		/*! No Filter Shader */
 		graphics::Shader* m_NoFilter = new graphics::Shader("../Assets/Shaders/NoFilter.vert", "../Assets/Shaders/NoFilter.frag");
+		//! Private Shader pointer.
+		/*! Horizontal Gaussian blur Shader */
 		graphics::Shader* m_BlurH = new graphics::Shader("../Assets/Shaders/Bloom.vert", "../Assets/Shaders/Bloom.frag");
+		//! Private Shader pointer.
+		/*! Vertical Gaussian blur Shader */
 		graphics::Shader* m_BlurV = new graphics::Shader("../Assets/Shaders/Bloom2.vert", "../Assets/Shaders/Bloom2.frag");
-
+		//! Private GLFWEngine pointer.
+		/*! Pointer to the GLFWEngine class, used to access Engine variables and functions*/
 		GLFWEngine* m_EnginePointer;
-
-		nanogui::Window* m_PostProWindow;
-
+		//! Private SkyBox pointer.
+		/*! Pointer to the Skybox class */
 		graphics::SkyBox* m_SkyBox;
-		
-		void SetUpUI();
+		//! The lerp member function
+		/*!
+		Linearly Interpolates between two numbers based on f
+		\param a float First number
+		\param b float Second number
+		\param f float Interpolation float
+		*/
+		float lerp(float a, float b, float f)
+		{
+			return a + f * (b - a);
+		}
 
-		//Values
-		int m_iSamples = 4;
-		unsigned int m_iBloomKernalSize = 1;
-		float m_fBloomSigma = 1;
-		float m_fBloomIntensity = 1;
-
-		float m_fVignetteRadius = 0.75f;
-		float m_fVignetteSoftness = 0.5f;
 
 		//SSAO test
-	
+
 		GLuint m_QuadVAO;
 		GLuint m_QuadVBO;
 
@@ -199,11 +230,23 @@ namespace Engine { namespace graphics {
 		//Vertical Blur
 		graphics::FrameBuffer* m_VBlurBufferAO;
 
-		float lerp(float a, float b, float f)
-		{
-			return a + f * (b - a);
-		}
 
+		void SetUpUI();
+
+		nanogui::Window* m_PostProWindow;
+
+		//Values
+		int m_iSamples = 4;
+		unsigned int m_iBloomKernalSize = 1;
+		float m_fBloomSigma = 1;
+		float m_fBloomIntensity = 1;
+
+		float m_fVignetteRadius = 0.75f;
+		float m_fVignetteSoftness = 0.5f;
+
+		
+
+		
 		//LightingNanoGUI
 
 		nanogui::Color m_SceneAmbient = nanogui::Color(255, 255, 255, 255);
