@@ -16,10 +16,8 @@ Engine::graphics::GBuffer::GBuffer(Window * window, int samples, Shader * shader
 		createBufferMultisample(GL_TEXTURE1, GL_RGB16F, m_PositionTexture); //Position
 		createBufferMultisample(GL_TEXTURE2, GL_RGB16F, m_NormalTexture); //Normal
 		createBufferMultisample(GL_TEXTURE3, GL_RGBA, m_Texture); //Color
-		createBufferMultisample(GL_TEXTURE3, GL_RGB, m_AdditioalComp); //Color
+		createBufferMultisample(GL_TEXTURE3, GL_RGB, m_AdditioalComp); //Metal, Roughness, relfection
 		createBufferMultisample(GL_TEXTURE4, GL_DEPTH_COMPONENT32F, m_DepthTexture); //Color
-
-		
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_PositionTexture, 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D_MULTISAMPLE, m_NormalTexture, 0);
@@ -30,7 +28,6 @@ Engine::graphics::GBuffer::GBuffer(Window * window, int samples, Shader * shader
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_NormalTexture, 0);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_Texture, 0);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, m_AdditioalComp, 0);
-		//glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_DepthTexture, 0);
 
 		GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 		glDrawBuffers(4, drawBuffers);
@@ -68,13 +65,11 @@ Engine::graphics::GBuffer::GBuffer(Window * window, int samples, Shader * shader
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_NormalTexture, 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_Texture, 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_AdditioalComp, 0);
-		
 
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_PositionTexture, 0);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_NormalTexture, 0);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_Texture, 0);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, m_AdditioalComp, 0);
-		//glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_DepthTexture, 0);
 
 		GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 		glDrawBuffers(4, drawBuffers);
@@ -108,30 +103,20 @@ void Engine::graphics::GBuffer::createBuffer(GLenum texUnit, GLenum format, GLui
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-
 }
 
 void Engine::graphics::GBuffer::createBufferMultisample(GLenum texUnit, GLenum format, GLuint & texid)
 {
-
 	glGenTextures(1, &texid);
 	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texid);
 	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, m_Samples, format, windowPointer->getWidth(), windowPointer->getHeight(), GL_TRUE);
-
 }
 
 void Engine::graphics::GBuffer::Render()
 {
-	//Unbind();
 	glBindVertexArray(m_QuadVAO);
 	glDisable(GL_DEPTH_TEST);
 	m_ScreenShader->enable();
-	//GLint baseImageLoc = glGetUniformLocation(m_ScreenShader->getID(), "texFramebuffer");
-	//glUniform1i(baseImageLoc, 2);
-	//glActiveTexture(GL_TEXTURE2);
-	//glBindTexture(GL_TEXTURE_2D, m_Texture);
-
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }

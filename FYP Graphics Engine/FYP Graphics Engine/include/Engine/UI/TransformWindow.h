@@ -4,20 +4,55 @@
 #include <Component\transform.h>
 #include <Engine\Graphics\postProcessingStack.h>
 namespace Engine { namespace UI {
-
+	//! TransformWindow 
+	/*!
+	UI class for displaying options for altering transforms.
+	Contained in the Engine::UI namespace.
+	*/
 	class TransformWindow
 	{
 	public:
+		//! MaterialWindow Contructor
+		/*!
+		Calls fucntion for inital set up of a UI Window
+		\param enginePointer Referance to the GLFW engine
+		*/
 		TransformWindow(Engine::GLFWEngine* enginePointer);
-		void SelectTransform(Components::Transform* selectedTransform);
-		void SelectLight(graphics::PostProcessingStack::Light* selectedLight);
-		void Clear();
 
+		//! The SelectTransform member function
+		/*!
+		Changes UI to resemble a selected transform
+		\param selectedTransform Pointer to a selected transform
+		*/
+		void SelectTransform(Components::Transform* selectedTransform);
+		//! The SelectLight member function
+		/*!
+		Changes UI to resemble a selected light
+		\param selectedLight Pointer to a selected light
+		*/
+		void SelectLight(graphics::PostProcessingStack::Light* selectedLight);
+		//! The Clear member function
+		/*!
+		Resets UI and clears selected transform pointer
+		*/
+		void Clear();
+		//! The IsMouseOver member function
+		/*!
+		Returns true if the mouse is over this window
+		*/
 		bool IsMouseOver() { return m_TransformWindow->focused(); }
 	private:
+		//! Private bool varible.
+		/*! True if the slected object is a light*/
 		bool m_bSelectedLight = true;
+		//! Private Transform pointer.
+		/*! Pointer to the selected Transform */
 		Components::Transform* m_SelectedTransform;
+		//! Private Light pointer.
+		/*! Pointer to the selected Light */
 		graphics::PostProcessingStack::Light* m_SelectedLight;
+
+		//UI Variables
 		nanogui::Window* m_TransformWindow;
 
 		nanogui::Label* m_PosLable;

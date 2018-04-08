@@ -13,6 +13,7 @@ namespace Engine { namespace graphics {
 	/*!
 	This class deals with displaying the base window as well as getting callbacks from mouse and keyboard inputs
 	Contained in the Engine::graphics namespace.
+	Inherits from nanogui Screen class to control and display UI elements
 	*/
 	class Window : public Screen
 	{
@@ -105,10 +106,16 @@ namespace Engine { namespace graphics {
 		\param yPos a reference to a double that will be the Y-Axis value of the cursor position
 		*/
 		void getMousePosition(double& xPos, double& yPos) const;
-
+		//! The getGLFWWindow member function
+		/*!
+		Returns the GLFW window pointer.
+		*/
 		GLFWwindow& getGLFWWindow() { return *m_Window; }
 
-		//Nanogui functions
+		//! The drawContents member function
+		/*!
+		Sets Opengl parameters back to normal after drawing UI
+		*/
 		void drawContents() override;
 
 	private:
@@ -132,12 +139,21 @@ namespace Engine { namespace graphics {
 		Tells GLFW to give infomation about mouse being moved and the cursors new position
 		*/
 		static friend void cursor_position_callback(GLFWwindow* window, double xPos, double yPos);
-
+		//! The char_callback static member function
+		/*!
+		Tells GLFW to give infomation about keyboard characters being pressed
+		*/
 		static friend void char_callback(GLFWwindow* window, unsigned int codepoint);
-
+		//! The drop_callback static member function
+		/*!
+		Tells GLFW to give infomation about files that are dragged onto the window
+		*/
 		static friend void drop_callback(GLFWwindow* window, int count, const char **filenames);
-
-		static friend void scroll_backback(GLFWwindow* window, double x, double y);
+		//! The scroll_callback static member function
+		/*!
+		Tells GLFW to give infomation the mouse scroll wheel
+		*/
+		static friend void scroll_callback(GLFWwindow* window, double x, double y);
 
 	};
 

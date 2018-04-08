@@ -41,18 +41,7 @@ void Engine::Scene::Update(bool orbit)
 		radius += step*20;
 	if (glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_RIGHT_SHIFT))
 		radius -= step*20;
-	/*if (yAxis)
-	{
-		fYAxis -= step * 10;
-		if (fYAxis < -4)
-			yAxis = !yAxis;
-	}
-	else
-	{
-		fYAxis += step * 10;
-		if (fYAxis > 4)
-			yAxis = !yAxis;
-	}*/
+
 	camPos = glm::vec3(x, fYAxis + 5, y);
 
 	V = glm::lookAt(

@@ -128,7 +128,7 @@ namespace Engine { namespace graphics {
 		glfwSetCursorPosCallback(m_Window, cursor_position_callback);
 		glfwSetCharCallback(m_Window, char_callback);
 		glfwSetDropCallback(m_Window, drop_callback);
-		glfwSetScrollCallback(m_Window, scroll_backback);
+		glfwSetScrollCallback(m_Window, scroll_callback);
 
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		{
@@ -189,7 +189,7 @@ namespace Engine { namespace graphics {
 		Window* win = (Window*)glfwGetWindowUserPointer(window);
 		win->dropCallbackEvent(count, filenames);
 	}
-	void scroll_backback(GLFWwindow * window, double x, double y)
+	void scroll_callback(GLFWwindow * window, double x, double y)
 	{
 		Window* win = (Window*)glfwGetWindowUserPointer(window);
 		win->scrollCallbackEvent(x, y);

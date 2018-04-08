@@ -67,8 +67,15 @@ namespace Engine {
 			Returns the ID value for referencing it
 			*/
 			const GLuint getID() const { return m_ShaderID; }
-
+			//! The getVertString member function
+			/*!
+			Returns the vertex shader path as a string
+			*/
 			const std::string getVertString() const { return m_VertSourceString; }
+			//! The getFragString member function
+			/*!
+			Returns the fragment shader path as a string
+			*/
 			const std::string getFragString() const { return m_FragSourceString; }
 		private:
 			//! The load member function

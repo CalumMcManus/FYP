@@ -207,16 +207,20 @@ void main()
 
 #define Scale vec3(0.8, 0.8, 0.8)
 #define K 19.19
-const float step = 0.1;
-const float minRayStep = 0.1;
+const float step = 0.05;
+const float minRayStep = 0.05;
 const float maxSteps = 60;
-const int numBinarySearchSteps = 10;
+const int numBinarySearchSteps = 20;
 const float reflectionSpecularFalloffExponent = 3.0;
 
 vec4 Reflection()
 {
-	Metallic = texture2D(gComponentSS, Texcoord).r;
-	float Metalness = texture(gComponentSS, Texcoord).z;
+	
+	vec3 component = texture2D(gComponentSS, Texcoord).rgb;
+	Metallic = component.r;
+	float Metalness = component.z;
+	float Roughness = component.y;
+	float level = clamp(log2(Roughness * 1024), 0, 10);
 	vec3 albedo = texture(gAlbedoSS, Texcoord).rgb;
 	Metallic = Metallic * Metalness;
 	//if(Metallic < 0.01)
@@ -256,10 +260,10 @@ vec4 Reflection()
 	
     vec3 SSR = textureLod(gAlbedoSS, coords.xy, 0).rgb * clamp(ReflectionMultiplier, 0.0, 0.9) * Fresnel;  
 	float av = (SSR.x + SSR.y + SSR.z)/3;
-	vec3 colour = mix(texture(cubeTexture, rc).rgb, SSR , clamp(ReflectionMultiplier, 0.0, 0.9));
+	vec3 colour = mix(textureLod(cubeTexture, rc, level).rgb, SSR , clamp(ReflectionMultiplier, 0.0, 0.9));
 
 	//if(SSR.r < 0.01 && SSR.g < 0.01 && SSR.b < 0.01)
-	//	return texture(cubeTexture, rc);
+	//	return textureLOD(cubeTexture, rc, 3);
 	
 	return vec4(colour, Metallic);
 }

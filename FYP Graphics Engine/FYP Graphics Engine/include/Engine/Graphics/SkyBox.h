@@ -33,11 +33,21 @@ namespace Engine {
 			Used to render the skybox
 			*/
 			void Draw(glm::mat4 proj, glm::mat4 viewRot) const;
-
+			//! The ChangeTexture member function
+			/*!
+			Opens dialogue to select a file. Uses file path to select new textures.
+			\param texturePath Path to new textures
+			*/
 			void ChangeTexture(std::string texturePath);
-
+			//! The Path member function
+			/*!
+			Returns the current texture path as a string.
+			*/
 			std::string Path() { return m_cCubemapPath; };
-
+			//! The GetTexture member function
+			/*!
+			Returns the texture ID of the cubemap texture
+			*/
 			GLuint GetTexture() { return m_Texture; }
 		private:
 			//! Private VertexArray pointer variable.
@@ -52,8 +62,11 @@ namespace Engine {
 			//! Private const char pointer variable.
 			/*! Holds the memory alocation of the file path to the cubemap folder */
 			std::string m_cCubemapPath;
-
+			//! Private GLuint vector
+			/*! Contains the indecies of the cubes vertacies */
 			std::vector<GLuint> m_Indecies;
+			//! Private GLuint variable
+			/*! Element Buffer Object */
 			GLuint EBO;
 
 

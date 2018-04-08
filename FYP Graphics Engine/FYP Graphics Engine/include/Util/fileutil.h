@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <sstream>
-//Windows only headers
 
 #include <windows.h>
 #include <shlobj.h>
@@ -12,6 +11,10 @@
 #include <vector>
 
 namespace Engine {
+	//! FileUtils 
+	/*!
+	FileUtils class. Contains functions for reading and writing files as well as string manipulation for file paths.
+	*/
 	class FileUtils
 	{
 	private:
@@ -19,6 +22,12 @@ namespace Engine {
 	public:
 		//Using C library instead of fstream as it is faster
 		//This requires _CRT_SECURE_NO_WARNINGS in preprocessor
+
+		//! The read_file static member function
+		/*!
+		Reads in file and returns it as a string.
+		\param path Directory
+		*/
 		static std::string read_file(const char* filePath)
 		{
 			FILE* file = fopen(filePath, "rt");
@@ -35,10 +44,15 @@ namespace Engine {
 			return result;
 		}
 
-		static __int64 FileSize(const char* name)
+		//! The FileSize static member function
+		/*!
+		Returns the file size of requested file
+		\param path Directory
+		*/
+		static __int64 FileSize(const char* path)
 		{
 			WIN32_FILE_ATTRIBUTE_DATA fad;
-			if (!GetFileAttributesEx(name, GetFileExInfoStandard, &fad))
+			if (!GetFileAttributesEx(path, GetFileExInfoStandard, &fad))
 				return -1; // error condition, could call GetLastError to find out more
 			LARGE_INTEGER size;
 			size.HighPart = fad.nFileSizeHigh;
@@ -47,6 +61,11 @@ namespace Engine {
 		}
 
 		//Opens windows file explorer to browse files
+		//! The BrowseFiles static member function
+		/*!
+		Opens dialogue to select a file, returns file path
+		\param name Dialogue name
+		*/
 		static std::string BrowseFiles(const char* name)
 		{
 			const int BUFSIZE = 1024;
@@ -63,8 +82,6 @@ namespace Engine {
 			
 			return pathValue;
 		}
-
-		//Opens windows file explorer to browse folders
 		static int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
 		{
 
@@ -77,7 +94,10 @@ namespace Engine {
 
 			return 0;
 		}
-
+		//! The BrowseFolder static member function
+		/*!
+		Opens dialogue to select a folder, returns directory
+		*/
 		static std::string BrowseFolder()//std::string saved_path)
 		{
 			TCHAR path[MAX_PATH];
@@ -110,7 +130,12 @@ namespace Engine {
 
 			return "";
 		}
-
+		//! The CreateFolder static member function
+		/*!
+		Creates a folder at a given path with a given name
+		\param atPath Directory
+		\param folderName Name of new folder
+		*/
 		static bool CreateFolder(std::string atPath, std::string folderName)
 		{
 			std::string folderPath = std::string(atPath + folderName);
@@ -126,9 +151,13 @@ namespace Engine {
 				return false;
 			}
 		}
-
-		inline static bool Exists(const std::string& name) {
-			if (FILE *file = fopen(name.c_str(), "r")) {
+		//! The CreateFolder static member function
+		/*!
+		Returns true if a file exsists at given path
+		\param path Directory
+		*/
+		inline static bool Exists(const std::string& path) {
+			if (FILE *file = fopen(path.c_str(), "r")) {
 				fclose(file);
 				return true;
 			}
@@ -165,7 +194,12 @@ namespace Engine {
 
 			return result;
 		}
-
+		//! The TransferFile static member function
+		/*!
+		Copies a file from one location and duplicates it to a second location
+		\param file1 file1
+		\param file2 file1
+		*/
 		static void TransferFile(std::string file1, std::string file2)
 		{
 			std::ifstream ifs(file1, std::ios::binary);
