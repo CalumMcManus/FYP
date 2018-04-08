@@ -18,20 +18,53 @@
 #include <glm.hpp>
 #include <fstream>
 namespace Engine { namespace graphics {
-
+	//! PostProcessingStack 
+	/*!
+	Handles all defered rendering and screen effects using Frame Buffers and the GBuffer
+	Contained in the Engine::UI namespace.
+	*/
 	class PostProcessingStack
 	{
 	
 	public:
+		//! Light 
+		/*!
+		Light Struct containing all light related data used for creating Point and Spot lights
+		Contained in the Engine::UI:PostProcessingStack namespace.
+		*/
 		struct Light
 		{
+			//! Public glm::vec3 variable.
+			/*! Light Position */
 			glm::vec3 Pos;
+			//! Public glm::vec3 variable.
+			/*! Light Colour */
 			glm::vec3 Color;
+			//! Public glm::vec3 variable.
+			/*! Light Rotation */
 			glm::vec3 Rot;
+			//! Public float variable.
+			/*! Light Cone angle (spot light) */
 			float Angle;
+			//! Public float variable.
+			/*! Light Radius (spot light) */
 			float Radius;
+			//! Public float variable.
+			/*! Light Intencity */
 			float Intencity;
+			//! Light Contructor
+			/*!
+			Empty contructor
+			*/
 			Light() {};
+			//! Light Contructor
+			/*!
+			Sets position, colour, radius and intencity of the light
+			\param pos glm::vec3 light position
+			\param color glm::vec3 light colour
+			\param radius float light radius
+			\param inten float light intencity
+			*/
 			Light(glm::vec3 pos, glm::vec3 color, float radius, float inten)
 			{
 				Pos = pos;
@@ -43,16 +76,52 @@ namespace Engine { namespace graphics {
 			}
 
 		};
+		//! Light Contructor
+		/*!
+		Sets up SSAO settings and quad for rendering.
+		Calls function to create Post Processing and Lighting UI
+		\param enginePointer GLFWEngine pointer
+		\param skyBox Skybox pointer
+		\param load Bool true if the current scene is loaded from a text file
+		*/
 		PostProcessingStack(GLFWEngine* enginePointer, SkyBox* skyBox, bool load);
+		//! PostProcessingStack Destructor.
+		/*!
+		Cleans up memory in the class
+		*/
 		~PostProcessingStack();
+		//! The Bind member function
+		/*!
+		Binds GBuffer
+		*/
 		void Bind();
+		//! The Render member function
+		/*!
+		Renders all defered rendering stages while passing infomation to required shaders
+		*/
 		void Render(glm::mat4 P, glm::mat4 View, glm::vec3 camPos);
-
+		//! The Lights member function
+		/*!
+		Returns a vector of pointers to all lights in the scene
+		*/
 		std::vector<Light*> Lights() { return m_Lights; };
-
+		//! The SetSelectedLight member function
+		/*!
+		Passed in the selected light so that the colour can be changed in the Lighting UI
+		\param light Light pointer of selected light
+		*/
 		void SetSelectedLight(Light* light) { m_SelectedLight = light; }
-
+		//! The Save member function
+		/*!
+		Saves Lighting and Post processing settings to the save text file
+		\param file ofstream File stream to open save file
+		*/
 		void Save(std::ofstream& file);
+		//! The Load member function
+		/*!
+		Load Lighting and Post processing settings from the save text file
+		\param file ofstream File stream to open save file
+		*/
 		void Load(std::ifstream& file);
 	private:
 		std::vector<Light*> m_Lights;
