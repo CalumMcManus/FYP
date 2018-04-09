@@ -35,7 +35,11 @@ namespace Engine { namespace graphics {
 		\param indices Vector of indicies
 		*/
 		Mesh(vector<Vertex> vertices, vector<GLuint> indices);
-
+		//! Mesh Decontructor
+		/*!
+		Cleans up memory in scene
+		*/
+		~Mesh();
 		//! The Render member function
 		/*!
 		Draws the mesh based on vertex data

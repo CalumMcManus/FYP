@@ -12,6 +12,7 @@ namespace Engine { namespace graphics {
 	}
 	Buffer::~Buffer()
 	{
+		glDeleteBuffers(1, &m_BufferID);
 	}
 	void Buffer::bind() const
 	{

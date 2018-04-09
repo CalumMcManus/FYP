@@ -27,6 +27,11 @@ namespace Engine { namespace graphics {
 		\param filepath Path to model file
 		*/
 		Model(string filepath);
+		//! Model Decontructor
+		/*!
+		Cleans up memory in class
+		*/
+		~Model();
 		//! The Render member function
 		/*!
 		Loops though each mesh and draws it.
@@ -36,7 +41,7 @@ namespace Engine { namespace graphics {
 	private:
 		//! Private vector of Mesh's.
 		/*! Vector containing all the meshes that make up the model*/
-		std::vector<Mesh> m_ChildMeshs;
+		std::vector<Mesh*> m_ChildMeshs;
 		//! Private string variable.
 		/*! Model directory*/
 		string directory;
@@ -49,7 +54,7 @@ namespace Engine { namespace graphics {
 
 		//Process model data functions
 		void processNode(aiNode* node, const aiScene* scene);
-		Mesh processMesh(aiMesh* mesh, const aiScene* scene);
+		Mesh* processMesh(aiMesh* mesh, const aiScene* scene);
 	};
 
 } }

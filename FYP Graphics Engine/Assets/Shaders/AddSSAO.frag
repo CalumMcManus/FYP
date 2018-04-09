@@ -42,6 +42,12 @@ uniform int Samples;
 uniform vec3 AmbientColor;
 uniform float AmbientInten;
 
+uniform bool CellShading;
+uniform int Cells;
+
+uniform float DirInten;
+uniform vec3 DirDirectection;
+
 vec3 MSAA()
 {
 	ivec2 texSize = textureSize(gAlbedo);
@@ -137,6 +143,16 @@ vec3 MSAA()
 
 			vec3 viewDir = normalize(viewPos - posWorld);
 			
+			//Directional Light
+			float intencity = DirInten;
+			vec3 dLightDir = mat3(View) * normalize(-DirDirectection);
+			float diff = max(dot(norm, dLightDir), 0.0);
+			if(CellShading){
+				intencity = intencity/Cells;
+				diff = floor(diff*Cells);
+			}
+			lighting += color.rgb * (vec3(1,1,1) * intencity * diff)/Samples;
+			
 			for(int i = 0; i < MAX_LIGHTS; ++i)
 			{
 				vec4 lightPos = View * vec4(lights[i].Pos,1.0);
@@ -151,13 +167,24 @@ vec3 MSAA()
 					if (shininess > 0.0) 
 					{
 						vec3 reflectionDirection = reflect(-lightDir, norm);
-						specularLightWeighting = pow(max(dot(viewDir, reflectionDirection), 0.0), 64);
+						specularLightWeighting = pow(max(dot(reflectionDirection, viewDir), 0.0), 64);
+						specularLightWeighting = clamp(specularLightWeighting, 0.0, 1.0);
+						if(CellShading){
+							specularLightWeighting = floor(specularLightWeighting*Cells);
+						}
 					}
+					float Intencity = lights[i].Inten;
 					if(lights[i].Angle >= 180)
 					{
 						attenuation = max(0.0, 1.0 - dot(lightRange, lightRange));
-						vec3 specular = (vec3(color.a) * specularLightWeighting * vec3(1))*attenuation;
-						lighting += (((diffuse*lights[i].Inten)*attenuation)+specular)/(Samples);
+						attenuation = clamp(attenuation, 0.0, 1.0);
+						if(CellShading){
+							Intencity = Intencity/Cells;
+							attenuation = ceil(attenuation*Cells);
+						}
+							
+						vec3 specular = (vec3(color.a) * specularLightWeighting * lights[i].Color)*attenuation;
+						lighting += (((diffuse*Intencity)+specular)*(attenuation))/(Samples);
 					}
 					else
 					{
@@ -167,18 +194,22 @@ vec3 MSAA()
 						float feather = difAngle/(lights[i].Angle/2);
 						attenuation = max(0.0, 1.0 - dot(lightRange, lightRange));
 						attenuation =  attenuation * (1 - feather);
+						if(CellShading){
+							Intencity = Intencity/Cells;
+							attenuation = ceil(attenuation*Cells);
+						}
 						if(difAngle > lights[i].Angle/2)
 						{
 							attenuation = 0;
 						}
-						vec3 specular = (vec3(color.a) * specularLightWeighting * vec3(1))*attenuation;
-						lighting += (((diffuse*lights[i].Inten)*attenuation)+specular)/(Samples);
+						vec3 specular = (vec3(color.a) * specularLightWeighting * lights[i].Color)*attenuation;
+						lighting += (((diffuse*Intencity)+specular)*(attenuation))/(Samples);
 					}
 				}
 			}
 		}
 	}
-	if(Outline)
+	if(Outline)												
 	{
 		return lighting * (ol);
 	}

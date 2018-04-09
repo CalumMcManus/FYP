@@ -87,9 +87,6 @@
     <ClInclude Include="include\Component\texture.h">
       <Filter>Header Files\Engine\Component</Filter>
     </ClInclude>
-    <ClInclude Include="include\Engine\Graphics\vertexArray.h">
-      <Filter>Header Files\Engine\Component</Filter>
-    </ClInclude>
     <ClInclude Include="include\Engine\Graphics\SkyBox.h">
       <Filter>Header Files\Engine\Graphics</Filter>
     </ClInclude>
@@ -125,6 +122,9 @@
     </ClInclude>
     <ClInclude Include="include\Engine\UI\MaterialWindow.h">
       <Filter>Header Files\Engine\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Engine\Graphics\vertexArray.h">
+      <Filter>Header Files\Engine\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

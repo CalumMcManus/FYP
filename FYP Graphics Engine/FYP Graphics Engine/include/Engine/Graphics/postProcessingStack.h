@@ -252,6 +252,13 @@ namespace Engine { namespace graphics {
 		nanogui::Color m_SceneAmbient = nanogui::Color(255, 255, 255, 255);
 		float m_fAmbientInten = 0.5f;
 		nanogui::Window* m_SceneLighting;
+
+		//Cel Shading
+		bool m_bCellShading;
+		int m_iCells;
+		//Directional Light
+		float m_fDirectionalIntencity;
+		glm::vec3 m_DirectionalDir = glm::vec3(-1, -1, 0);
 	};
 
 } }

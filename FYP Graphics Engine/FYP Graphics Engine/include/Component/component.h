@@ -21,6 +21,7 @@ namespace Engine { namespace Components {
 		\param message const char pointer Message
 		*/
 		virtual void Message(const char* message) = 0;
+		virtual ~Component() {};
 	};
 } 
 }

@@ -71,6 +71,12 @@ namespace Engine
 		*/
 		void Load(std::string loadPath);
 
+		//! The DeleteObject member function
+		/*!
+		Deletes the selected game object
+		*/
+		void DeleteObject();
+
 	private:
 		//! Private Shader pointer.
 		/*! Pointer to the default shader for defered rendering*/
@@ -84,7 +90,9 @@ namespace Engine
 		//! Private GameObject pointer Vector.
 		/*! Stores all the GameOBjects in the scene*/
 		std::vector<GameObject*> v_Objects;
-
+		//! Private GameObject pointer.
+		/*! Pointer to the selected object*/
+		GameObject* m_SelectedObject;
 		//! Private GameObject pointer.
 		/*! Pointer to the GameObject class, used for storing the Light object for debug drawing*/
 		GameObject* m_LightObject;

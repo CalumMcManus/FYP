@@ -92,6 +92,9 @@ void Engine::graphics::PostProcessingStack::Save(std::ofstream & file)
 	file << "VignetteRadius: " + std::to_string(m_fVignetteRadius) << std::endl;
 	file << "VignetteSoft: " + std::to_string(m_fVignetteSoftness) << std::endl;
 	file << "Outline: " + std::to_string((int)m_Outline) << std::endl;
+	file << "Cel Shading: " + std::to_string((int)m_bCellShading) << std::endl;
+	file << "Cels: " + std::to_string(m_iCells) << std::endl;
+	file << "DirInten: " + std::to_string(m_fDirectionalIntencity) << std::endl;
 
 }
 void Engine::graphics::PostProcessingStack::Load(std::ifstream & file)
@@ -198,6 +201,22 @@ void Engine::graphics::PostProcessingStack::Load(std::ifstream & file)
 			iss >> s;
 			iss >> boolean;
 			m_Outline = boolean;
+
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> boolean;
+			m_bCellShading = boolean;
+
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> m_iCells;
+
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> m_fDirectionalIntencity;
 		}
 	}
 	SetUpUI();
@@ -458,6 +477,10 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 
 	m_AddSSAO->setUniform1i("SSAO", m_SSAO);
 	m_AddSSAO->setUniform1i("Outline", m_Outline);
+	m_AddSSAO->setUniform1i("CellShading", m_bCellShading);
+	m_AddSSAO->setUniform1i("Cells", m_iCells);
+	m_AddSSAO->setUniform1f("DirInten", m_fDirectionalIntencity);
+	m_AddSSAO->setUniform3f("DirDirectection", m_DirectionalDir);
 	m_AddSSAO->setUniform3f("viewPos", camPos);
 	m_AddSSAO->setUniformMat4("View", View);
 	m_AddSSAO->setUniformMat4("Proj", P);
@@ -530,7 +553,6 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 	m_SceneLighting->setPosition(Eigen::Vector2i(15, 15));
 	m_SceneLighting->setLayout(new nanogui::GroupLayout());
 
-	new nanogui::Label(m_SceneLighting, "Ambient", "sans-bold", 20);
 	m_SceneLighting->add<nanogui::Label>("Ambient Colour", "sans-bold", 15);
 	nanogui::ColorPicker* picker = new nanogui::ColorPicker(m_SceneLighting, m_SceneAmbient);
 	picker->setCallback([&](nanogui::Color color)
@@ -549,7 +571,7 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 	slider->setFixedWidth(150);
 	nanogui::TextBox *textBox = new nanogui::TextBox(panelLight);
 	textBox->setFixedSize(Eigen::Vector2i(60, 25));
-	textBox->setValue("50");
+	textBox->setValue(std::to_string((int)(m_fAmbientInten * 100)));
 	textBox->setUnits("%");
 	slider->setCallback([textBox](float value) {
 		textBox->setValue(std::to_string((int)(value * 100)));
@@ -599,6 +621,48 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 		std::cout << s.c_str() << std::endl;
 		m_SkyBox->ChangeTexture(s);
 	});
+
+	m_SceneLighting->add<nanogui::Label>("Directional Light", "sans-bold", 15);
+	nanogui::Widget *panelDirection = new nanogui::Widget(m_SceneLighting);
+	panelDirection->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
+		nanogui::Alignment::Maximum, 0, 20));
+
+	nanogui::Slider *sliderDirInten = new nanogui::Slider(panelDirection);
+	sliderDirInten->setValue(m_fDirectionalIntencity);
+	sliderDirInten->setFixedWidth(150);
+	nanogui::TextBox *textDirInten = new nanogui::TextBox(panelDirection);
+	textDirInten->setFixedSize(Eigen::Vector2i(60, 25));
+	textDirInten->setValue(std::to_string((int)m_fDirectionalIntencity*100));
+	textDirInten->setUnits("%");
+	sliderDirInten->setCallback([&, textDirInten](float value) {
+		textDirInten->setValue(std::to_string((int)(value * 100)));
+		m_fDirectionalIntencity = value;
+	});
+	sliderDirInten->setFinalCallback([&](float value) {
+		m_fDirectionalIntencity = value;
+	});
+	textDirInten->setFixedSize(Eigen::Vector2i(60, 25));
+	textDirInten->setFontSize(20);
+	textDirInten->setAlignment(nanogui::TextBox::Alignment::Right);
+
+	m_SceneLighting->add<nanogui::Label>("Cel Shading", "sans-bold", 15);
+	nanogui::Widget *panelCellShading = new nanogui::Widget(m_SceneLighting);
+	panelCellShading->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
+		nanogui::Alignment::Maximum, 0, 20));
+	CheckBox *csOutline = new CheckBox(panelCellShading, "Cel Shading",
+		[&](bool state) { m_bCellShading = !m_bCellShading; }
+	);
+	csOutline->setChecked(m_bCellShading);
+	nanogui::IntBox<int> *textBoxCS = new nanogui::IntBox<int>(panelCellShading);
+	textBoxCS->setFixedSize(Eigen::Vector2i(60, 25));
+	textBoxCS->setValue(m_iCells);
+	textBoxCS->setFixedSize(Eigen::Vector2i(60, 25));
+	textBoxCS->setFontSize(20);
+	textBoxCS->setAlignment(nanogui::TextBox::Alignment::Right);
+	textBoxCS->setEditable(true);
+	textBoxCS->setCallback([&](int value) {
+		m_iCells = value;
+	});
 	//Post Pro
 
 	m_PostProWindow = new nanogui::Window(m_EnginePointer->m_Window, "Post Processing");
@@ -616,7 +680,7 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 	sliderBloom->setFixedWidth(150);
 	nanogui::TextBox *textBoxBloom = new nanogui::TextBox(panel);
 	textBoxBloom->setFixedSize(Eigen::Vector2i(60, 25));
-	textBoxBloom->setValue("50");
+	textBoxBloom->setValue(std::to_string((int)(m_fBloomIntensity * 100)));
 	textBoxBloom->setUnits("%");
 	sliderBloom->setCallback([&, textBoxBloom](float value) {
 		textBoxBloom->setValue(std::to_string((int)(value * 100)));
@@ -664,7 +728,7 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 	radiusSlider->setFixedWidth(150);
 	nanogui::TextBox *vignetteTextBox = new nanogui::TextBox(vignettePanel);
 	vignetteTextBox->setFixedSize(Eigen::Vector2i(60, 25));
-	vignetteTextBox->setValue("50");
+	vignetteTextBox->setValue(std::to_string((int)(m_fVignetteRadius * 100)));
 	vignetteTextBox->setUnits("%");
 	radiusSlider->setCallback([&, vignetteTextBox](float value) {
 		vignetteTextBox->setValue(std::to_string((int)(value * 100)));
@@ -687,7 +751,7 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 	softnessSlider->setFixedWidth(150);
 	nanogui::TextBox *vignetteSoftTextBox = new nanogui::TextBox(vignetteSoftPanel);
 	vignetteSoftTextBox->setFixedSize(Eigen::Vector2i(60, 25));
-	vignetteSoftTextBox->setValue("50");
+	vignetteSoftTextBox->setValue(std::to_string((int)(m_fVignetteSoftness * 100)));
 	vignetteSoftTextBox->setUnits("%");
 	softnessSlider->setCallback([&, vignetteSoftTextBox](float value) {
 		vignetteSoftTextBox->setValue(std::to_string((int)(value * 100)));

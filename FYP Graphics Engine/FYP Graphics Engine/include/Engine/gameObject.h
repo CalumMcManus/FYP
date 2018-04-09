@@ -42,7 +42,20 @@ public:
 	{
 		m_components[typeid(T)] = comp;
 	}
-
+	//! The GameObject Deconstructor
+	/*!
+	Cleans up memory in class
+	*/
+	~GameObject()
+	{
+		for (auto& pair : m_components)
+		{	
+			std::cout << "delete" << std::endl;
+			delete pair.second;
+			pair.second = nullptr;
+		}
+		m_components.clear();
+	};
 private:
 	//! Private unordered_map of Component pointers.
 	/*! unordered map containing all Components added to this GameObject*/

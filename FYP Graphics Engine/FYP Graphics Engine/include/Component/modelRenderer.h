@@ -21,6 +21,16 @@ namespace Engine { namespace Components {
 			m_Model = new graphics::Model(modelPath);
 			m_Path = modelPath;
 		};
+		//! ModelRenderer Decontructor
+		/*!
+		Clears memory in class
+		*/
+		virtual ~ModelRenderer()
+		{
+			std::cout << "renderer delete" << std::endl;
+			delete m_Model;
+			m_Model = nullptr;
+		};
 		//! The Update member function
 		/*!
 		Function for Updating components each frame

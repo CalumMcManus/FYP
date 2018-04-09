@@ -76,6 +76,7 @@ void Engine::Scene::Render()
 						if (mag < 2)
 						{
 							std::cout << "Selected Model!" << std::endl;
+							m_SelectedObject = v_Objects[j];
 							m_TransformWindow->SelectTransform(transform);
 							m_MaterialWindow->SelectMaterial(v_Objects[j]->getComponent<Material>());
 							selected = true;
@@ -115,7 +116,7 @@ void Engine::Scene::Render()
 
 	m_SkyBox->Draw(P, V * glm::translate(camPos));
 	m_DefaultShader->enable();
-
+	glDepthRange(0.01, 1.0);
 	m_DefaultShader->setUniformMat4("Projection", P);
 	for (int i = 0; i < v_Objects.size(); i++)
 	{
@@ -141,9 +142,10 @@ void Engine::Scene::Render()
 			tempModel->getModel().render();
 	}
 	//std::cout << m_TransformWindow->IsMouseOver() << std::endl;
+	glDepthRange(0, 0.01);
 	if (glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_TAB) == GLFW_PRESS)
 	{
-		glDepthMask(0);
+		
 		m_LightShader->enable();
 		for (int l = 0; l < m_PostProcessing->Lights().size(); l++)
 		{
@@ -160,8 +162,9 @@ void Engine::Scene::Render()
 
 			m_LightObject->getComponent<ModelRenderer>()->getModel().render();
 		}
-		glDepthMask(1);
+			
 	}
+	glDepthRange(0, 1.0);
 	m_PostProcessing->Render(P, V, camPos);
 	
 }
@@ -342,4 +345,17 @@ void Engine::Scene::Load(std::string loadPath)
 		std::cout << "Scene: Load: Failed to open file" << std::endl;
 	}
 
+}
+
+void Engine::Scene::DeleteObject()
+{
+	for (int i = 0; i < v_Objects.size(); i++)
+	{
+		if (m_SelectedObject == v_Objects[i])
+		{
+			delete v_Objects[i];
+			v_Objects[i] = nullptr;
+			v_Objects.erase(v_Objects.begin() + i);
+		}
+	}
 }

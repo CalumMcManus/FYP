@@ -120,6 +120,11 @@ void Engine::Project::Init()
 		AddModel();
 	}
 	)->setTooltip("Add model to the scene.");
+	gui->addButton("Remove Model", [&]()
+	{
+		m_Scene->DeleteObject();
+	}
+	)->setTooltip("Add model to the scene.");
 	gui->addButton("Save", [&]()
 	{
 		Save();

@@ -25,6 +25,18 @@ namespace Engine {	namespace Components {
 		\param shader Material Shader
 		*/
 		Material(graphics::Shader* shader) : m_Shader(shader) {};
+		//! Material Decontructor
+		/*!
+		Cleans up memory in class
+		*/
+		virtual ~Material()
+		{
+			delete m_Albedo;
+			delete m_Specular;
+			delete m_Normal;
+			delete m_Metalic;
+			delete m_Roughness;
+		}
 		//! The Update member function
 		/*!
 		Function for Updating components each frame

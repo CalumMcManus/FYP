@@ -7,6 +7,12 @@ Model::Model(string filepath)
 	loadModel(filepath);
 }
 
+Engine::graphics::Model::~Model()
+{
+	for (auto mesh : m_ChildMeshs)
+		delete mesh;
+}
+
 
 void Model::loadModel(string filepath)
 {
@@ -41,7 +47,7 @@ void Model::processNode(aiNode* node, const aiScene* scene)
 	}
 }
 
-Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
+Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
 	vector<Vertex> vertices;
 	vector<unsigned int> indices;
@@ -119,14 +125,14 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		// Store handedness in w
 		vertices[i].tangent.w = (glm::dot(glm::cross(n, t1), t2) < 0.0f) ? -1.0f : 1.0f;
 	}
-	return Mesh(vertices, indices);
+	return new Mesh(vertices, indices);
 }
 
 void Model::render()
 {
 	for(int i = 0; i < m_ChildMeshs.size(); i++)
 	{
-		m_ChildMeshs[i].render();
+		m_ChildMeshs[i]->render();
 	}
 }
 

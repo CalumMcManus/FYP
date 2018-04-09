@@ -7,8 +7,10 @@ namespace Engine { namespace graphics {
 	}
 	VertexArray::~VertexArray()
 	{
+		glDeleteVertexArrays(1, &m_ArrayID);
 		for (int i = 0; i < m_Buffers.size(); i++)
 		{
+			std::cout << "buffer delete" << std::endl;
 			delete m_Buffers[i];
 
 		}
