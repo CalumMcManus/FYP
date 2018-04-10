@@ -95,6 +95,7 @@ void Engine::graphics::PostProcessingStack::Save(std::ofstream & file)
 	file << "Cel Shading: " + std::to_string((int)m_bCellShading) << std::endl;
 	file << "Cels: " + std::to_string(m_iCells) << std::endl;
 	file << "DirInten: " + std::to_string(m_fDirectionalIntencity) << std::endl;
+	file << "DirColour: " + std::to_string(m_DirectionalColour.x) + " " + std::to_string(m_DirectionalColour.y) + " " + std::to_string(m_DirectionalColour.z) << std::endl;
 
 }
 void Engine::graphics::PostProcessingStack::Load(std::ifstream & file)
@@ -217,6 +218,12 @@ void Engine::graphics::PostProcessingStack::Load(std::ifstream & file)
 			iss = std::istringstream(line);
 			iss >> s;
 			iss >> m_fDirectionalIntencity;
+
+			std::getline(file, line);
+			iss = std::istringstream(line);
+			iss >> s;
+			iss >> x; iss >> y; iss >> z;
+			m_DirectionalColour = glm::vec3(x, y, z);
 		}
 	}
 	SetUpUI();
@@ -474,13 +481,20 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	glActiveTexture(GL_TEXTURE12);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_SkyBox->GetTexture());
 	
+	glm::vec3 dirRotation =
+		m_DirectionalDir
+		* glm::toQuat(glm::rotate(glm::radians(m_DirectionalX*360.0f), glm::vec3(1, 0, 0)));
+	
+	dirRotation = dirRotation * glm::toQuat(glm::rotate(glm::radians(m_DirectionalY*360.0f), glm::vec3(0, 1, 0)));
 
 	m_AddSSAO->setUniform1i("SSAO", m_SSAO);
 	m_AddSSAO->setUniform1i("Outline", m_Outline);
 	m_AddSSAO->setUniform1i("CellShading", m_bCellShading);
 	m_AddSSAO->setUniform1i("Cells", m_iCells);
 	m_AddSSAO->setUniform1f("DirInten", m_fDirectionalIntencity);
-	m_AddSSAO->setUniform3f("DirDirectection", m_DirectionalDir);
+	m_AddSSAO->setUniform3f("DirDirectection", dirRotation);
+	m_AddSSAO->setUniform3f("DirColour", m_DirectionalColour);
+	
 	m_AddSSAO->setUniform3f("viewPos", camPos);
 	m_AddSSAO->setUniformMat4("View", View);
 	m_AddSSAO->setUniformMat4("Proj", P);
@@ -492,6 +506,16 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	for (int i = 0; i < m_Lights.size(); i++)
 	{
 		std::string light = "lights[" + std::to_string(i) + "]";
+
+		if (m_Lights[i]->toDelete)
+		{
+			m_AddSSAO->setUniform1f((light + ".Inten").c_str(), 0);
+			m_AddSSAO->setUniform3f((light + ".Color").c_str(), glm::vec3(0, 0, 0));
+			delete m_Lights[i];
+			m_Lights.erase(m_Lights.begin() + i);
+			i--;
+			continue;
+		}
 		m_AddSSAO->setUniform3f((light + ".Pos").c_str() , m_Lights[i]->Pos);
 		m_AddSSAO->setUniform3f((light + ".Color").c_str(), m_Lights[i]->Color);
 		m_AddSSAO->setUniform1f((light + ".Radius").c_str(), m_Lights[i]->Radius);
@@ -598,7 +622,7 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 		{
 			if (m_SelectedLight == m_Lights[i])
 			{
-				m_Lights.erase(m_Lights.begin() + i);
+				m_Lights[i]->toDelete = true;
 			}
 		}
 	});
@@ -644,6 +668,37 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 	textDirInten->setFixedSize(Eigen::Vector2i(60, 25));
 	textDirInten->setFontSize(20);
 	textDirInten->setAlignment(nanogui::TextBox::Alignment::Right);
+
+	nanogui::Widget *panelDirRot = new nanogui::Widget(m_SceneLighting);
+	panelDirRot->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
+		nanogui::Alignment::Maximum, 0, 20));
+	panelDirRot->add<nanogui::Label>("X", "sans-bold", 15);
+	nanogui::Slider *sliderDirX = new nanogui::Slider(panelDirRot);
+	sliderDirX->setValue(m_DirectionalX);
+	sliderDirX->setFixedWidth(70);
+	sliderDirX->setCallback([&, textDirInten](float value) {
+		m_DirectionalX = value;
+	});
+	sliderDirX->setFinalCallback([&](float value) {
+		m_DirectionalX = value;
+	});
+	panelDirRot->add<nanogui::Label>("Y", "sans-bold", 15);
+	nanogui::Slider *sliderDirY = new nanogui::Slider(panelDirRot);
+	sliderDirY->setValue(m_DirectionalY);
+	sliderDirY->setFixedWidth(70);
+	sliderDirY->setCallback([&, textDirInten](float value) {
+		m_DirectionalY = value;
+	});
+	sliderDirY->setFinalCallback([&](float value) {
+		m_DirectionalY = value;
+	});
+
+	nanogui::ColorPicker* pickerDir = new nanogui::ColorPicker(m_SceneLighting, nanogui::Color(m_DirectionalColour.x, m_DirectionalColour.y, m_DirectionalColour.z,1.0f));
+	pickerDir->setCallback([&](nanogui::Color color)
+	{
+		m_DirectionalColour = glm::vec3(color.x(), color.y(), color.z());
+	});
+	pickerDir->setHeight(5);
 
 	m_SceneLighting->add<nanogui::Label>("Cel Shading", "sans-bold", 15);
 	nanogui::Widget *panelCellShading = new nanogui::Widget(m_SceneLighting);

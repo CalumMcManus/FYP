@@ -47,6 +47,7 @@ uniform int Cells;
 
 uniform float DirInten;
 uniform vec3 DirDirectection;
+uniform vec3 DirColour;
 
 vec3 MSAA()
 {
@@ -151,7 +152,7 @@ vec3 MSAA()
 				intencity = intencity/Cells;
 				diff = floor(diff*Cells);
 			}
-			lighting += color.rgb * (vec3(1,1,1) * intencity * diff)/Samples;
+			lighting += color.rgb * DirColour* (vec3(1,1,1) * intencity * diff)/Samples;
 			
 			for(int i = 0; i < MAX_LIGHTS; ++i)
 			{

@@ -38,7 +38,7 @@ namespace Engine { namespace graphics {
 			/*! Light Position */
 			glm::vec3 Pos;
 			//! Public glm::vec3 variable.
-			/*! Light Colour */
+			/*! RGB Light Colour */
 			glm::vec3 Color;
 			//! Public glm::vec3 variable.
 			/*! Light Rotation */
@@ -74,6 +74,9 @@ namespace Engine { namespace graphics {
 				Radius = radius;
 				Intencity = inten;
 			}
+			//! Public bool variable.
+			/*! True if the light should be delete from the scene */
+			bool toDelete = false;
 
 		};
 		//! Light Contructor
@@ -258,7 +261,10 @@ namespace Engine { namespace graphics {
 		int m_iCells;
 		//Directional Light
 		float m_fDirectionalIntencity;
-		glm::vec3 m_DirectionalDir = glm::vec3(-1, -1, 0);
+		glm::vec3 m_DirectionalDir = glm::vec3(0, -1, 0);
+		glm::vec3 m_DirectionalColour = glm::vec3(1, 1, 1);
+		float m_DirectionalX;
+		float m_DirectionalY;
 	};
 
 } }
