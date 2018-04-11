@@ -173,6 +173,9 @@ namespace Engine { namespace graphics {
 		//! Private FrameBuffer pointer.
 		/*! Vignette Filter */
 		graphics::FrameBuffer* m_Vignette;
+		//! Private FrameBuffer pointer.
+		/*! Vignette Filter */
+		graphics::FrameBuffer* m_Reflection;
 
 		//! Private Shader pointer.
 		/*! No Filter Shader */
@@ -223,7 +226,7 @@ namespace Engine { namespace graphics {
 		graphics::Shader* m_SSAOShader = new graphics::Shader("../Assets/Shaders/SSAO.vert", "../Assets/Shaders/SSAO.frag");
 		std::vector<glm::vec3> ssaoKernel;
 		graphics::Shader* m_AddSSAO = new graphics::Shader("../Assets/Shaders/AddSSAO.vert", "../Assets/Shaders/AddSSAO.frag");
-
+		graphics::Shader* m_ReflectionShader = new graphics::Shader("../Assets/Shaders/Reflection.vert", "../Assets/Shaders/Reflection.frag");
 		//No Filter
 		graphics::FrameBuffer* m_FrameBufferAO;
 		//No Filter

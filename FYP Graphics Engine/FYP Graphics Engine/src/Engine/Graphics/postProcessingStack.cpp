@@ -243,6 +243,7 @@ void Engine::graphics::PostProcessingStack::SetUp()
 	delete m_VBlurBufferAO; m_VBlurBufferAO = nullptr;
 	delete m_FinalBlueAO; m_FinalBlueAO = nullptr;
 	delete m_Bloom; m_Bloom = nullptr;
+	delete m_Reflection; m_Reflection = nullptr;
 
 	m_MSBuffer = new graphics::GBuffer(m_EnginePointer->m_Window, m_iSamples, m_NoFilter);
 	m_SSBuffer = new graphics::GBuffer(m_EnginePointer->m_Window, 1, m_NoFilter);
@@ -259,6 +260,7 @@ void Engine::graphics::PostProcessingStack::SetUp()
 	m_FinalBlueAO = new graphics::FrameBuffer(m_EnginePointer->m_Window, m_NoFilter);
 	m_Bloom = new graphics::CombineFilter(m_EnginePointer->m_Window);
 
+	m_Reflection = new graphics::FrameBuffer(m_EnginePointer->m_Window, m_NoFilter);
 	
 	glDeleteFramebuffers(1, &m_SSAOFBO);
 	glDeleteTextures(1, &m_SSAOTexture);
@@ -442,44 +444,41 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	}
 	else
 	{
+		GLint baseImageLoc = glGetUniformLocation(m_AddSSAO->getID(), "gAlbedoSS");
+		glUniform1i(baseImageLoc, 1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetTextureID());
 		//
 		GLint ssaoLoc = glGetUniformLocation(m_AddSSAO->getID(), "ssaoTex");
 		glUniform1i(ssaoLoc, 5);
 		glActiveTexture(GL_TEXTURE5);
 		glBindTexture(GL_TEXTURE_2D, m_FinalBlueAO->GetTextureID());
 		//
+		GLint posLoc = glGetUniformLocation(m_AddSSAO->getID(), "gPositionSS");
+		glUniform1i(posLoc, 8);
+		glActiveTexture(GL_TEXTURE8);
+		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetPos());
+		//
+		GLint normLoc = glGetUniformLocation(m_AddSSAO->getID(), "gNormalSS");
+		glUniform1i(normLoc, 9);
+		glActiveTexture(GL_TEXTURE9);
+		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetNormal());
+		//
 		GLint depthLoc = glGetUniformLocation(m_AddSSAO->getID(), "gDepthSS");
 		glUniform1i(depthLoc, 10);
 		glActiveTexture(GL_TEXTURE10);
 		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetDepth());
+		//
+		GLint compLoc = glGetUniformLocation(m_AddSSAO->getID(), "gComponentSS");
+		glUniform1i(compLoc, 11);
+		glActiveTexture(GL_TEXTURE11);
+		glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetAdditional());
 		
 		m_AddSSAO->setUniform1i("Samples", 1);
 	}
-	//
-	GLint compLoc = glGetUniformLocation(m_AddSSAO->getID(), "gComponentSS");
-	glUniform1i(compLoc, 11);
-	glActiveTexture(GL_TEXTURE11);
-	glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetAdditional());
+	
 
-	GLint baseImageLoc = glGetUniformLocation(m_AddSSAO->getID(), "gAlbedoSS");
-	glUniform1i(baseImageLoc, 1);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetTextureID());
-
-	GLint posLoc = glGetUniformLocation(m_AddSSAO->getID(), "gPositionSS");
-	glUniform1i(posLoc, 8);
-	glActiveTexture(GL_TEXTURE8);
-	glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetPos());
-	//
-	GLint normLoc = glGetUniformLocation(m_AddSSAO->getID(), "gNormalSS");
-	glUniform1i(normLoc, 9);
-	glActiveTexture(GL_TEXTURE9);
-	glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetNormal());
-
-	GLint cubeLoc = glGetUniformLocation(m_AddSSAO->getID(), "cubeTexture");
-	glUniform1i(cubeLoc, 12);
-	glActiveTexture(GL_TEXTURE12);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_SkyBox->GetTexture());
+	
 	
 	glm::vec3 dirRotation =
 		m_DirectionalDir
@@ -525,12 +524,71 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 		glm::quat rotation = glm::toQuat(glm::orientate4(glm::radians(m_Lights[i]->Rot)));
 		m_AddSSAO->setUniform3f((light + ".Direction").c_str(), glm::mat3(View) * (glm::vec3(0, 1, 0)* rotation));
 	}
-
+	
+	m_EnginePointer->m_Window->Clear();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
+	glBindVertexArray(0);
+	//Unbind texture so the active texture IDs can be reused
+	/*glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE3); glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE4); glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE5); glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE6); glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE7); glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE8); glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE9); glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE10); glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE11); glBindTexture(GL_TEXTURE_2D, 0);*/
+
+	
+	//m_Reflection->Bind();
+	glBindVertexArray(m_QuadVAO);
+	glDisable(GL_DEPTH_TEST);
+	m_ReflectionShader->enable();
+	GLint albedoLoc = glGetUniformLocation(m_ReflectionShader->getID(), "gAlbedoSS");
+	glUniform1i(albedoLoc, 12);
+	glActiveTexture(GL_TEXTURE12);
+	glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetTextureID());
+
+	GLint baseImageLoc = glGetUniformLocation(m_ReflectionShader->getID(), "LightPass");
+	glUniform1i(baseImageLoc, 13);
+	glActiveTexture(GL_TEXTURE13);
+	glBindTexture(GL_TEXTURE_2D, m_FrameBuffer->GetTextureID());
+	//
+	GLint posLoc = glGetUniformLocation(m_ReflectionShader->getID(), "gPositionSS");
+	glUniform1i(posLoc, 14);
+	glActiveTexture(GL_TEXTURE14);
+	glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetPos());
+	//
+	GLint normLoc = glGetUniformLocation(m_ReflectionShader->getID(), "gNormalSS");
+	glUniform1i(normLoc, 15);
+	glActiveTexture(GL_TEXTURE15);
+	glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetNormal());
+	//
+	GLint compLoc = glGetUniformLocation(m_ReflectionShader->getID(), "gComponentSS");
+	glUniform1i(compLoc, 16);
+	glActiveTexture(GL_TEXTURE16);
+	glBindTexture(GL_TEXTURE_2D, m_SSBuffer->GetAdditional());
+	GLint cubeLoc = glGetUniformLocation(m_ReflectionShader->getID(), "cubeTexture");
+	glUniform1i(cubeLoc, 17);
+	glActiveTexture(GL_TEXTURE17);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_SkyBox->GetTexture());
+	m_ReflectionShader->setUniform3f("viewPos", camPos);
+	m_ReflectionShader->setUniformMat4("View", View);
+	m_ReflectionShader->setUniformMat4("Proj", P);
+	m_ReflectionShader->setUniformMat4("invView", glm::inverse(View));
+	m_ReflectionShader->setUniformMat4("invProj", glm::inverse(P));
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_EnginePointer->m_Window->Clear();
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+	return;
 	m_LumaBuffer->Bind();
 	m_EnginePointer->m_Window->Clear();
-	m_FrameBuffer->Render();
+	m_Reflection->Render();
 	
 	m_HBlurBuffer->GetShader()->enable();
 	m_HBlurBuffer->GetShader()->setUniform1f("sigmaValue", m_fBloomSigma);
@@ -560,7 +618,7 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	m_Vignette->GetShader()->setUniform2f("resolution", glm::vec2(m_EnginePointer->m_Window->getWidth(), m_EnginePointer->m_Window->getHeight()));
 	m_Vignette->Bind();
 	m_EnginePointer->m_Window->Clear();
-	m_Bloom->Render(m_FrameBuffer->GetTextureID());
+	m_Bloom->Render(m_Reflection->GetTextureID());
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	m_Vignette->Render();
 
