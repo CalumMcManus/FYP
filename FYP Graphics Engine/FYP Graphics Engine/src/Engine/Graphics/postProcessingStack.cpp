@@ -543,7 +543,7 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	glActiveTexture(GL_TEXTURE11); glBindTexture(GL_TEXTURE_2D, 0);*/
 
 	
-	//m_Reflection->Bind();
+	m_Reflection->Bind();
 	glBindVertexArray(m_QuadVAO);
 	glDisable(GL_DEPTH_TEST);
 	m_ReflectionShader->enable();
@@ -581,11 +581,10 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	m_ReflectionShader->setUniformMat4("invView", glm::inverse(View));
 	m_ReflectionShader->setUniformMat4("invProj", glm::inverse(P));
 	
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	m_EnginePointer->m_Window->Clear();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
-	return;
+	
 	m_LumaBuffer->Bind();
 	m_EnginePointer->m_Window->Clear();
 	m_Reflection->Render();
