@@ -144,7 +144,7 @@ vec3 MSAA()
 				intencity = intencity/Cells;
 				diff = floor(diff*Cells);
 			}
-			lighting += color.rgb * DirColour* (vec3(1,1,1) * intencity * diff)/Samples;
+			lighting += color.rgb * (DirColour * intencity * diff)/Samples;
 			
 			for(int i = 0; i < MAX_LIGHTS; ++i)
 			{

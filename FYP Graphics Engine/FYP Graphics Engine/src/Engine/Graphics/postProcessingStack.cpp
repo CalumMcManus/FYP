@@ -502,9 +502,10 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	m_AddSSAO->setUniform3f("AmbientColor", glm::vec3(m_SceneAmbient.x(), m_SceneAmbient.y(), m_SceneAmbient.z()));
 	m_AddSSAO->setUniform1f("AmbientInten", m_fAmbientInten);
 
+	int shaderLightIndex = 0;
 	for (int i = 0; i < m_Lights.size(); i++)
 	{
-		std::string light = "lights[" + std::to_string(i) + "]";
+		std::string light = "lights[" + std::to_string(shaderLightIndex) + "]";
 
 		if (m_Lights[i]->toDelete)
 		{
@@ -513,16 +514,28 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 			delete m_Lights[i];
 			m_Lights.erase(m_Lights.begin() + i);
 			i--;
+			shaderLightIndex++;
 			continue;
 		}
-		m_AddSSAO->setUniform3f((light + ".Pos").c_str() , m_Lights[i]->Pos);
-		m_AddSSAO->setUniform3f((light + ".Color").c_str(), m_Lights[i]->Color);
-		m_AddSSAO->setUniform1f((light + ".Radius").c_str(), m_Lights[i]->Radius);
-		m_AddSSAO->setUniform1f((light + ".Inten").c_str(), m_Lights[i]->Intencity);
+		if (shaderLightIndex != i)
+		{
+			m_AddSSAO->setUniform3f((light + ".Pos").c_str(), glm::vec3(0, 0, 0));
+			m_AddSSAO->setUniform3f((light + ".Color").c_str(), glm::vec3(0, 0, 0));
+			m_AddSSAO->setUniform1f((light + ".Radius").c_str(),0);
+			m_AddSSAO->setUniform1f((light + ".Inten").c_str(), 0);
+		}
+		else
+		{
+			m_AddSSAO->setUniform3f((light + ".Pos").c_str(), m_Lights[i]->Pos);
+			m_AddSSAO->setUniform3f((light + ".Color").c_str(), m_Lights[i]->Color);
+			m_AddSSAO->setUniform1f((light + ".Radius").c_str(), m_Lights[i]->Radius);
+			m_AddSSAO->setUniform1f((light + ".Inten").c_str(), m_Lights[i]->Intencity);
 
-		m_AddSSAO->setUniform1f((light + ".Angle").c_str(), m_Lights[i]->Angle);
-		glm::quat rotation = glm::toQuat(glm::orientate4(glm::radians(m_Lights[i]->Rot)));
-		m_AddSSAO->setUniform3f((light + ".Direction").c_str(), glm::mat3(View) * (glm::vec3(0, 1, 0)* rotation));
+			m_AddSSAO->setUniform1f((light + ".Angle").c_str(), m_Lights[i]->Angle);
+			glm::quat rotation = glm::toQuat(glm::orientate4(glm::radians(m_Lights[i]->Rot)));
+			m_AddSSAO->setUniform3f((light + ".Direction").c_str(), glm::mat3(View) * (glm::vec3(0, 1, 0)* rotation));
+		}
+		shaderLightIndex++;
 	}
 	
 	m_EnginePointer->m_Window->Clear();

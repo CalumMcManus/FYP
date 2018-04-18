@@ -33,11 +33,11 @@ void main()
 
 #define Scale vec3(0.8, 0.8, 0.8)
 #define K 19.19
-const float step = 0.1;
-const float minRayStep = 0.1;
-const float maxSteps = 30;
-const int numBinarySearchSteps = 20;
-const float reflectionSpecularFalloffExponent = 3.0;
+const float step = 0.05;
+const float minRayStep = 0.01;
+const float maxSteps = 50;
+const int numBinarySearchSteps = 30;
+const float reflectionSpecularFalloffExponent = 4.0;
 
 vec4 Reflection()
 {
@@ -95,12 +95,12 @@ vec4 Reflection()
 }
 vec3 PositionFromDepth(float depth) {
     float z = depth * 2.0 - 1.0;
-    vec4 clipSpacePosition = vec4(Texcoord * 2.0 - 1.0, z, 1.0);
-    vec4 viewSpacePosition = invProj * clipSpacePosition;
+    vec4 clipPosition = vec4(Texcoord * 2.0 - 1.0, z, 1.0);
+    vec4 viewPosition = invProj * clipPosition;
 
-    viewSpacePosition /= viewSpacePosition.w;
+    viewPosition /= viewPosition.w;
 
-    return viewSpacePosition.xyz;
+    return viewPosition.xyz;
 }
 vec3 BinarySearch(inout vec3 dir, inout vec3 hitCoord, inout float dDepth)
 {

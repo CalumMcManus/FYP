@@ -28,8 +28,8 @@ void main () {
 	gl_Position = MVP * vec4(vertex_position, 1.0);
 	TexCoords = vertex_uv;
 	
-	vec3 tangent = normalize(NormalMatrix*vertex_tangent.xyz);  //Complete this
-	vec3 norm = normalize(NormalMatrix * vertex_normal);  //Complete this
+	vec3 tangent = normalize(NormalMatrix*vertex_tangent.xyz); 
+	vec3 norm = normalize(NormalMatrix * vertex_normal); 
 	vec3 bitangent =  normalize( cross(norm, tangent)) * vertex_tangent.w;
 	TBN = mat3(tangent, bitangent, norm);
 
