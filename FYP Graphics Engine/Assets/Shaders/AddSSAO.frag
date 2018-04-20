@@ -44,6 +44,8 @@ uniform float DirInten;
 uniform vec3 DirDirectection;
 uniform vec3 DirColour;
 
+uniform int LightsInUse;
+
 vec3 MSAA()
 {
 	ivec2 texSize = textureSize(gAlbedo);
@@ -146,7 +148,7 @@ vec3 MSAA()
 			}
 			lighting += color.rgb * (DirColour * intencity * diff)/Samples;
 			
-			for(int i = 0; i < MAX_LIGHTS; ++i)
+			for(int i = 0; i < LightsInUse; ++i)
 			{
 				vec4 lightPos = View * vec4(lights[i].Pos,1.0);
 				vec3 normLight = normalize(lightPos.xyz);

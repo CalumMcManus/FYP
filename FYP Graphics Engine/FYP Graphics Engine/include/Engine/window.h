@@ -110,7 +110,7 @@ namespace Engine { namespace graphics {
 		/*!
 		Returns the GLFW window pointer.
 		*/
-		GLFWwindow& getGLFWWindow() { return *m_Window; }
+		GLFWwindow* getGLFWWindow() { return m_Window; }
 
 		//! The drawContents member function
 		/*!

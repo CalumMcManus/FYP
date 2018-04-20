@@ -3,7 +3,10 @@
 Engine::Scene::Scene(GLFWEngine* enginePointer, bool load)
 {
 	m_EnginePointer = enginePointer;
-
+	std::cout << enginePointer->m_Window->getWidth() << " " << enginePointer->m_Window->getHeight() << std::endl;
+	float width = enginePointer->m_Window->getWidth();
+	float height = enginePointer->m_Window->getHeight();
+	P = glm::perspective(1.16937f, (float)width / (float)height, 0.1f, 150.f);//1.16937 = 67 degrees
 	V = glm::lookAt(
 		camPos,
 		glm::vec3(0, 5, 0),
@@ -17,6 +20,7 @@ Engine::Scene::Scene(GLFWEngine* enginePointer, bool load)
 	
 	m_LightObject = new GameObject();
 	m_LightObject->addComponent(new ModelRenderer("../Assets/Models/Light.obj"));
+	glfwMaximizeWindow(m_EnginePointer->m_Window->getGLFWWindow());
 }
 
 Engine::Scene::~Scene()
@@ -29,17 +33,17 @@ void Engine::Scene::Update(bool orbit)
 	x = radius*cos(theta);
 	y = radius*sin(theta);
 
-	if(glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_LEFT))
+	if(glfwGetKey(m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_LEFT))
 		theta += step;
-	if (glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_RIGHT))
+	if (glfwGetKey(m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_RIGHT))
 		theta -= step;
-	if (glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_UP))
+	if (glfwGetKey(m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_UP))
 		fYAxis += step*20;
-	if (glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_DOWN))
+	if (glfwGetKey(m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_DOWN))
 		fYAxis -= step*20;
-	if (glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_RIGHT_CONTROL))
+	if (glfwGetKey(m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_RIGHT_CONTROL))
 		radius += step*20;
-	if (glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_RIGHT_SHIFT))
+	if (glfwGetKey(m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_RIGHT_SHIFT))
 		radius -= step*20;
 
 	camPos = glm::vec3(x, fYAxis + 5, y);
@@ -53,18 +57,19 @@ void Engine::Scene::Update(bool orbit)
 
 void Engine::Scene::Render()
 {
+
 	//Selection
-	if (glfwGetMouseButton(&m_EnginePointer->m_Window->getGLFWWindow(), 0) == GLFW_PRESS && glfwGetMouseButton(&m_EnginePointer->m_Window->getGLFWWindow(), 0) != GLFW_REPEAT)
+	if (glfwGetMouseButton(m_EnginePointer->m_Window->getGLFWWindow(), 1) == GLFW_PRESS && glfwGetMouseButton(m_EnginePointer->m_Window->getGLFWWindow(), 1) != GLFW_REPEAT)
 	{
 		glm::dvec2 mousePos;
-		glfwGetCursorPos(&m_EnginePointer->m_Window->getGLFWWindow(), &mousePos.x, &mousePos.y);
+		glfwGetCursorPos(m_EnginePointer->m_Window->getGLFWWindow(), &mousePos.x, &mousePos.y);
 		std::vector<glm::vec3> temp = Physics::RayCast::CastRay(camPos, mousePos, 100, P, V, m_EnginePointer->m_Window);
 		bool selected = false;
 		
 		for (int i = 0; i < temp.size(); i++)
 		{
 			//std::cout << temp[i].x << " " << temp[i].y << " " << temp[i].z << std::endl;
-			if (!(glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_TAB) == GLFW_PRESS))
+			if (!(glfwGetKey(m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_TAB) == GLFW_PRESS))
 			{
 				for (int j = 0; j < v_Objects.size(); j++)
 				{
@@ -143,7 +148,7 @@ void Engine::Scene::Render()
 	}
 	//std::cout << m_TransformWindow->IsMouseOver() << std::endl;
 	glDepthRange(0, 0.01);
-	if (glfwGetKey(&m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_TAB) == GLFW_PRESS)
+	if (glfwGetKey(m_EnginePointer->m_Window->getGLFWWindow(), GLFW_KEY_TAB) == GLFW_PRESS)
 	{
 		
 		m_LightShader->enable();
@@ -336,7 +341,7 @@ void Engine::Scene::Load(std::string loadPath)
 				v_Objects.push_back(obj);
 			}
 
-			if (s == "#Lighting")
+			if (s == "#Lighting" && m_PostProcessing != nullptr)
 				m_PostProcessing->Load(inputFile);
 		}
 	}
@@ -344,6 +349,7 @@ void Engine::Scene::Load(std::string loadPath)
 	{
 		std::cout << "Scene: Load: Failed to open file" << std::endl;
 	}
+	glfwRestoreWindow(m_EnginePointer->m_Window->getGLFWWindow());
 
 }
 

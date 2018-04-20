@@ -346,7 +346,6 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 			GL_NEAREST);
 	}
 
-
 	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOFBO);
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -501,7 +500,7 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 	m_AddSSAO->setUniformMat4("invProj", glm::inverse(P));
 	m_AddSSAO->setUniform3f("AmbientColor", glm::vec3(m_SceneAmbient.x(), m_SceneAmbient.y(), m_SceneAmbient.z()));
 	m_AddSSAO->setUniform1f("AmbientInten", m_fAmbientInten);
-
+	m_AddSSAO->setUniform1i("LightsInUse", m_Lights.size());
 	int shaderLightIndex = 0;
 	for (int i = 0; i < m_Lights.size(); i++)
 	{

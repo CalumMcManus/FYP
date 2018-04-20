@@ -112,7 +112,12 @@ namespace Engine { namespace graphics {
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 		glfwWindowHint(GLFW_SAMPLES, 4);
-		m_Window = glfwCreateWindow(m_Width, m_Height, m_Title, NULL, NULL);
+		//glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
+		
+		const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		m_Width = mode-> width;
+		m_Height = mode->height;
+		m_Window = glfwCreateWindow(m_Width, m_Height, m_Title, glfwGetPrimaryMonitor(), nullptr);
 		if (!m_Window)
 		{
 			glfwTerminate();
@@ -147,7 +152,7 @@ namespace Engine { namespace graphics {
 
 		
 
-		std::cout << "Calum McManus's CMEngine" << std::endl;
+		std::cout << "Calum McManus's FYP Graphics Engine" << std::endl;
 		std::cout << "Running OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 		return true;
 	}

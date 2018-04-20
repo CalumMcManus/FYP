@@ -23,9 +23,22 @@ vec3 hash(vec3 a);
 vec4 RayMarch(vec3 dir, inout vec3 hitCoord, out float dDepth);
 vec4 Reflection();
 float Metallic;
+float Metalness;
+float Roughness;
+
 void main()
 {
 	vec3 color = texture(LightPass, Texcoord).rgb;
+	vec3 component = texture2D(gComponentSS, Texcoord).rgb;
+	
+	if(component.r < 0.01)
+	{
+		outColor = vec4(color, 1.0);
+		return;
+	}
+	Metallic = component.r;
+	Metalness = component.z;
+	Roughness = component.y;
 	vec3 reflection = Reflection().rgb;
 	color = mix(color, reflection, Metallic);
 	outColor = vec4(color, 1.0);
@@ -41,11 +54,6 @@ const float reflectionSpecularFalloffExponent = 4.0;
 
 vec4 Reflection()
 {
-	
-	vec3 component = texture2D(gComponentSS, Texcoord).rgb;
-	Metallic = component.r;
-	float Metalness = component.z;
-	float Roughness = component.y;
 	float level = clamp(log2(Roughness * 1024), 0, 10);
 	vec3 albedo = texture(LightPass, Texcoord).rgb;
 	Metallic = Metallic * Metalness;
@@ -91,7 +99,7 @@ vec4 Reflection()
 	//if(SSR.r < 0.01 && SSR.g < 0.01 && SSR.b < 0.01)
 	//	return textureLOD(cubeTexture, rc, 3);
 	
-	return vec4(colour, Metallic);
+	return vec4(textureLod(cubeTexture, rc, level).rgb, Metallic);
 }
 vec3 PositionFromDepth(float depth) {
     float z = depth * 2.0 - 1.0;

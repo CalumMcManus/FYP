@@ -99,7 +99,7 @@ namespace Engine
 
 		//! Private glm::mat4.
 		/*! Perspective Matrix*/
-		glm::mat4 P = glm::perspective(1.16937f, (float)1280 / (float)720, 0.1f, 150.f);//1.16937 = 67 degrees
+		glm::mat4 P;
 		//! Private glm::mat4.
 		/*! View Matrix*/
 		glm::mat4 V = glm::lookAt(glm::vec3(0, 7, -20), glm::vec3(0, 7, 0), glm::vec3(0, 1, 0));

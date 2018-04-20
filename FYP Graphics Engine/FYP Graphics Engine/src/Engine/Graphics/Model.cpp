@@ -125,6 +125,7 @@ Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		// Store handedness in w
 		vertices[i].tangent.w = (glm::dot(glm::cross(n, t1), t2) < 0.0f) ? -1.0f : 1.0f;
 	}
+	
 	return new Mesh(vertices, indices);
 }
 

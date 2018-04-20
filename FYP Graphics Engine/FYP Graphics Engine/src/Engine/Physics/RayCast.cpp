@@ -15,7 +15,7 @@ glm::vec3 Engine::Physics::RayCast::ViewToWorldSpace(glm::vec2 screenPos, glm::m
 	glm::vec4 ray_eye = glm::inverse(projection) * ray_clip;
 	ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0, 0.0);
 
-	//Eye (Camera) Coordinates to 4d World Coordinates
+	//Eye (Camera) Coordinates to 3d World Coordinates
 	glm::vec3 ray_wor = glm::inverse(view) * ray_eye;
 	ray_wor = glm::normalize(ray_wor);
 	return ray_wor;

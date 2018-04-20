@@ -58,7 +58,7 @@ void Engine::Project::AddModel()
 	std::string fileName = FileUtils::splitpath(modelPath, delims).back();
 	std::string newPath = m_Directory + "Assets/Models/" + fileName;
 	std::cout << newPath << std::endl;
-
+	glfwRestoreWindow(m_EnginePointer->m_Window->getGLFWWindow());
 	if (FileUtils::Exists(newPath))
 	{
 		tempObj->addComponent(new ModelRenderer(newPath.c_str()));
@@ -73,6 +73,7 @@ void Engine::Project::AddModel()
 	
 	tempObj->addComponent(new Transform(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
 	m_Scene->AddObject(tempObj);
+	
 }
 
 void Engine::Project::Update()
@@ -134,6 +135,7 @@ void Engine::Project::Init()
 	m_EnginePointer->m_Window->setVisible(true);
 	m_EnginePointer->m_Window->performLayout();
 	windowGUI->center();
+
 }
 
 bool Engine::Project::CreateConfigFile(std::string path)

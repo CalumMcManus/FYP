@@ -182,7 +182,7 @@ std::string Engine::UI::MaterialWindow::GetTexture(std::string title)
 	std::string fileName = FileUtils::splitpath(texturePath, delims).back();
 	std::string newPath = m_EnginePointer->GetProject()->GetProjectDirectory() +"Assets/Textures/" + fileName;
 	std::cout << newPath << std::endl;
-
+	glfwRestoreWindow(m_EnginePointer->m_Window->getGLFWWindow());
 	if (FileUtils::Exists(newPath))
 	{
 		return newPath;
