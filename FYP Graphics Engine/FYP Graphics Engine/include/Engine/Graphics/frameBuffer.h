@@ -105,7 +105,7 @@ namespace Engine { namespace graphics {
 		//! Private int variable.
 		/*! AA Samples */
 		int m_Samples;
-		//! Private Sahder Pointer.
+		//! Private Shader Pointer.
 		/*! Pointer to screen space shader */
 		Shader* m_ScreenShader;
 

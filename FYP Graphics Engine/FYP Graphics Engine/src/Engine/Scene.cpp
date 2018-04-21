@@ -7,9 +7,10 @@ Engine::Scene::Scene(GLFWEngine* enginePointer, bool load)
 	float width = enginePointer->m_Window->getWidth();
 	float height = enginePointer->m_Window->getHeight();
 	P = glm::perspective(1.16937f, (float)width / (float)height, 0.1f, 150.f);//1.16937 = 67 degrees
+	//P = glm::ortho<float>(-16, 16, -10, 10, -10, 200);
 	V = glm::lookAt(
-		camPos,
 		glm::vec3(0, 5, 0),
+		glm::vec3(0, 0, 0),
 		glm::vec3(0, 1, 0)
 	);
 	m_TransformWindow = new UI::TransformWindow(enginePointer);
@@ -170,7 +171,7 @@ void Engine::Scene::Render()
 			
 	}
 	glDepthRange(0, 1.0);
-	m_PostProcessing->Render(P, V, camPos);
+	m_PostProcessing->Render(P, V, camPos, v_Objects);
 	
 }
 

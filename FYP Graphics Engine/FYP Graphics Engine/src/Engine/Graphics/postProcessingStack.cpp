@@ -247,6 +247,8 @@ void Engine::graphics::PostProcessingStack::SetUp()
 
 	m_MSBuffer = new graphics::GBuffer(m_EnginePointer->m_Window, m_iSamples, m_NoFilter);
 	m_SSBuffer = new graphics::GBuffer(m_EnginePointer->m_Window, 1, m_NoFilter);
+	m_ShadowMap = new graphics::ShadowBuffer(m_EnginePointer->m_Window, m_ShadowMapShader);
+
 
 	m_FrameBuffer = new graphics::FrameBuffer(m_EnginePointer->m_Window, m_NoFilter);
 	m_LumaBuffer = new graphics::FrameBuffer(m_EnginePointer->m_Window, new graphics::Shader("../Assets/Shaders/BrightOnly.vert", "../Assets/Shaders/BrightOnly.frag"));
@@ -293,8 +295,29 @@ void Engine::graphics::PostProcessingStack::Bind()
 	m_EnginePointer->m_Window->Clear();
 }
 
-void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, glm::vec3 camPos)
+void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, glm::vec3 camPos, std::vector<GameObject*> objects)
 {
+	//Create Shadow Map from directional light
+	glDrawBuffer(GL_NONE);
+	dirRotation =
+		m_DirectionalDir
+		* glm::toQuat(glm::rotate(glm::radians(m_DirectionalX*360.0f), glm::vec3(1, 0, 0)));
+
+	dirRotation = dirRotation * glm::toQuat(glm::rotate(glm::radians(m_DirectionalY*360.0f), glm::vec3(0, 1, 0)));
+
+	m_ShadowMap->Bind(-dirRotation, objects);
+	m_EnginePointer->m_Window->Clear();
+
+	//glBindVertexArray(m_QuadVAO);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//m_NoFilter->enable();
+	//GLint ShadowLoc = glGetUniformLocation(m_NoFilter->getID(), "texFramebuffer");
+	//glUniform1i(ShadowLoc, 2);
+	//glActiveTexture(GL_TEXTURE2);
+	//glBindTexture(GL_TEXTURE_2D, m_ShadowMap->GetTextureID());
+	//glDrawArrays(GL_TRIANGLES, 0, 6);
+	//return;
+	//Lighting pass
 	if (m_MS)
 	{
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_MSBuffer->GetBufferID());
@@ -475,15 +498,11 @@ void Engine::graphics::PostProcessingStack::Render(glm::mat4 P, glm::mat4 View, 
 		
 		m_AddSSAO->setUniform1i("Samples", 1);
 	}
-	
-
-	
-	
-	glm::vec3 dirRotation =
-		m_DirectionalDir
-		* glm::toQuat(glm::rotate(glm::radians(m_DirectionalX*360.0f), glm::vec3(1, 0, 0)));
-	
-	dirRotation = dirRotation * glm::toQuat(glm::rotate(glm::radians(m_DirectionalY*360.0f), glm::vec3(0, 1, 0)));
+	GLint shadowLoc = glGetUniformLocation(m_AddSSAO->getID(), "ShadowMap");
+	glUniform1i(shadowLoc, 12);
+	glActiveTexture(GL_TEXTURE12);
+	glBindTexture(GL_TEXTURE_2D, m_ShadowMap->GetTextureID());
+	m_AddSSAO->setUniformMat4("ShadowBias", m_ShadowMap->GetBiasMatrix());
 
 	m_AddSSAO->setUniform1i("SSAO", m_SSAO);
 	m_AddSSAO->setUniform1i("Outline", m_Outline);

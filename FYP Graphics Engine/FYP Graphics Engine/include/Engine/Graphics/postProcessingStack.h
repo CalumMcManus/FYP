@@ -1,6 +1,7 @@
 #pragma once
 #include <Engine\Graphics\frameBuffer.h>
 #include <Engine\Graphics\combineFilter.h>
+#include <Engine\Graphics\shadowBuffer.h>
 #include <Engine\Graphics\gBuffer.h>
 #include <Engine\Engine.h>
 #include <gtc\type_ptr.hpp>
@@ -102,7 +103,7 @@ namespace Engine { namespace graphics {
 		/*!
 		Renders all defered rendering stages while passing infomation to required shaders
 		*/
-		void Render(glm::mat4 P, glm::mat4 View, glm::vec3 camPos);
+		void Render(glm::mat4 P, glm::mat4 View, glm::vec3 camPos, std::vector<GameObject*> objects);
 		//! The Lights member function
 		/*!
 		Returns a vector of pointers to all lights in the scene
@@ -126,6 +127,8 @@ namespace Engine { namespace graphics {
 		\param file ofstream File stream to open save file
 		*/
 		void Load(std::ifstream& file);
+
+		glm::vec3 getDirLight() { return dirRotation;  }
 	private:
 		//! Private vector of light pointers.
 		/*! Contains all the lights in the scene */
@@ -176,10 +179,16 @@ namespace Engine { namespace graphics {
 		//! Private FrameBuffer pointer.
 		/*! Vignette Filter */
 		graphics::FrameBuffer* m_Reflection;
+		//! Private ShadowBuffer pointer.
+		/*! Shaow Map Filter */
+		graphics::ShadowBuffer* m_ShadowMap;
 
 		//! Private Shader pointer.
 		/*! No Filter Shader */
 		graphics::Shader* m_NoFilter = new graphics::Shader("../Assets/Shaders/NoFilter.vert", "../Assets/Shaders/NoFilter.frag");
+		//! Private Shader pointer.
+		/*! No Filter Shader */
+		graphics::Shader* m_ShadowMapShader = new graphics::Shader("../Assets/Shaders/ShadowMap.vert", "../Assets/Shaders/ShadowMap.frag");
 		//! Private Shader pointer.
 		/*! Horizontal Gaussian blur Shader */
 		graphics::Shader* m_BlurH = new graphics::Shader("../Assets/Shaders/Bloom.vert", "../Assets/Shaders/Bloom.frag");
@@ -268,6 +277,7 @@ namespace Engine { namespace graphics {
 		glm::vec3 m_DirectionalColour = glm::vec3(1, 1, 1);
 		float m_DirectionalX;
 		float m_DirectionalY;
+		glm::vec3 dirRotation;
 	};
 
 } }

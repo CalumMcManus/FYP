@@ -14,6 +14,9 @@ uniform sampler2D gNormalSS;
 uniform sampler2D gAlbedoSS;
 uniform sampler2D gDepthSS;
 
+uniform sampler2D ShadowMap;
+uniform mat4 ShadowBias;
+
 uniform samplerCube cubeTexture;
 
 uniform mat4 View;
@@ -45,6 +48,33 @@ uniform vec3 DirDirectection;
 uniform vec3 DirColour;
 
 uniform int LightsInUse;
+
+float CalcShadowFactor(vec3 pos, vec3 norm)
+{
+	vec4 coords = ShadowBias * inverse(View) * vec4(pos, 1);
+	coords /= coords.w;
+	vec2 UVcoords;
+	UVcoords.x = 0.5 * coords.x + 0.5;
+    UVcoords.y = 0.5 * coords.y + 0.5;
+    float z = 0.5 * coords.z + 0.5;    
+	
+	float bias = max(0.01 * (1.0 - dot(norm, DirDirectection)), 0.005);
+	float Depth = 0;
+	vec2 texelSize = 1.0 / textureSize(ShadowMap, 0);
+	for(int x = -1; x <= 1; ++x)
+	{
+		for(int y = -1; y <= 1; ++y)
+		{
+			float depthSample = texture(ShadowMap, UVcoords + vec2(x, y) * texelSize).x;  
+			Depth += z - bias > depthSample ? 1.0 : 0.0;
+		}
+	}
+	Depth /= 9;
+	if (Depth < z)                                                                 
+        return 1.0;                                                                         
+    else                                                                                    
+        return (1 - Depth);  
+}
 
 vec3 MSAA()
 {
@@ -139,7 +169,7 @@ vec3 MSAA()
 			vec3 viewDir = normalize(viewPos - posWorld);
 			
 			//Directional Light
-			float intencity = DirInten;
+			float intencity = DirInten * CalcShadowFactor(posWorld, norm);
 			vec3 dLightDir = mat3(View) * normalize(-DirDirectection);
 			float diff = max(dot(norm, dLightDir), 0.0);
 			if(CellShading){

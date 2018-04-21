@@ -23,7 +23,7 @@ void Engine::GLFWEngine::Run()
 		m_Window->Clear();
 		m_Window->drawContents();
 		m_Project->Update();
-		if(!glfwGetKey(m_Window->getGLFWWindow(), GLFW_KEY_LEFT_CONTROL))
+		if(!glfwGetKey(m_Window->getGLFWWindow(), GLFW_KEY_LEFT_SHIFT))
 			m_Window->drawWidgets();
 		m_Window->Update();
 	}
