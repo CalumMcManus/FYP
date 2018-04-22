@@ -217,5 +217,16 @@ namespace Engine {
 			return splitpath(str, delimiters);
 		}
 
+		bool test_Exists(const std::string& path)
+		{
+			return Exists(path);
+		}
+
+		std::string test_ReadFile(const char* path)
+		{
+			return read_file(path);
+		}
+
+
 	};
 }

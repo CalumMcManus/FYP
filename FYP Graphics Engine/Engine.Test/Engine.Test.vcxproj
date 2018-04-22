@@ -79,7 +79,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>../FYP Graphics Engine/include/;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>../FYP Graphics Engine/include/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../Dependencies/glm/glm</IncludePath>
     <SourcePath>../FYP Graphics Engine/src/;$(VC_SourcePath);</SourcePath>
     <LibraryPath>../FYP Graphics Engine/;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
