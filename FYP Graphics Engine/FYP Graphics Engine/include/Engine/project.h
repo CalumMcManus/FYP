@@ -57,7 +57,7 @@ namespace Engine
 		/*!
 		Sets up the project and scene
 		*/
-		void Init();
+		bool Init();
 		//! The GetProjectDirectory member function
 		/*!
 		Returns the project directory as a string

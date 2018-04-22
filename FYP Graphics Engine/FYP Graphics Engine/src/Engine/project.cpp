@@ -9,14 +9,14 @@ Engine::Project::Project(GLFWEngine* enginePointer)
 	projectgui->addButton("Load Project", [&]()
 	{
 		m_bLoad = true;
-		Init();
-		projectSetup->setVisible(false);
+		if(Init())
+			projectSetup->setVisible(false);
 	}
 	)->setTooltip("Load a project");
 	projectgui->addButton("New Project", [&]()
 	{
-		Init();
-		projectSetup->setVisible(false);
+		if(Init())
+			projectSetup->setVisible(false);
 	}
 	)->setTooltip("Start a new project");
 	m_EnginePointer->m_Window->setVisible(true);
@@ -95,27 +95,31 @@ void Engine::Project::Load()
 	m_Scene->Load(m_Directory);
 }
 
-void Engine::Project::Init()
+bool Engine::Project::Init()
 {
+	if (m_bLoad)
+	{
+		m_Directory = FileUtils::BrowseFiles("Select Save File");
+		if (m_Directory == "") return false;
+		m_Directory = m_Directory.substr(0, m_Directory.find_last_of("\\/"));
+		m_Directory += '/';
+	}
 	m_Scene = new Scene(m_EnginePointer, m_bLoad);
 	gui = new nanogui::FormHelper(m_EnginePointer->m_Window);
 	
 	if (m_bLoad)
 	{
-		m_Directory = FileUtils::BrowseFiles("Select Save File");
-		m_Directory = m_Directory.substr(0, m_Directory.find_last_of("\\/"));
-		m_Directory += '/';
 		std::cout << m_Directory << std::endl;
 		Load();
 	}
 	else
 	{
-		SetUpProjectDirectories();
+		if (!SetUpProjectDirectories())
+			return false;
 	}
 
-	windowGUI = gui->addWindow(Eigen::Vector2i(10, 10), "Random Stuff");
+	windowGUI = gui->addWindow(Eigen::Vector2i(10, 10), "Utility");
 
-	gui->addVariable("Camera Orbit", m_bOrbit, true);
 	gui->addButton("Add Model", [&]()
 	{
 		AddModel();
@@ -135,7 +139,7 @@ void Engine::Project::Init()
 	m_EnginePointer->m_Window->setVisible(true);
 	m_EnginePointer->m_Window->performLayout();
 	windowGUI->center();
-
+	return true;
 }
 
 bool Engine::Project::CreateConfigFile(std::string path)
