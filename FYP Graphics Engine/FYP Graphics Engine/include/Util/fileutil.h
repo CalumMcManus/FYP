@@ -20,6 +20,7 @@ namespace Engine {
 	private:
 
 	public:
+		FileUtils() {};
 		//Using C library instead of fstream as it is faster
 		//This requires _CRT_SECURE_NO_WARNINGS in preprocessor
 
@@ -206,6 +207,14 @@ namespace Engine {
 			std::ofstream ofs(file2, std::ios::binary);
 
 			ofs << ifs.rdbuf();
+		}
+
+		//Unit Test Wrappers
+		std::vector<std::string> test_splitpath(
+			const std::string& str
+			, const std::set<char> delimiters)
+		{
+			return splitpath(str, delimiters);
 		}
 
 	};

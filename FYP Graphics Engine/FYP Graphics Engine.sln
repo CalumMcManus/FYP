@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FYP Graphics Engine", "FYP Graphics Engine\FYP Graphics Engine.vcxproj", "{54276D35-D68B-40AF-8BEE-A461ADA2C473}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine.Test", "Engine.Test\Engine.Test.vcxproj", "{BB10B107-45B6-4310-8B15-3CAE08DBB6BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{54276D35-D68B-40AF-8BEE-A461ADA2C473}.Release|x64.Build.0 = Release|x64
 		{54276D35-D68B-40AF-8BEE-A461ADA2C473}.Release|x86.ActiveCfg = Release|Win32
 		{54276D35-D68B-40AF-8BEE-A461ADA2C473}.Release|x86.Build.0 = Release|Win32
+		{BB10B107-45B6-4310-8B15-3CAE08DBB6BA}.Debug|x64.ActiveCfg = Debug|x64
+		{BB10B107-45B6-4310-8B15-3CAE08DBB6BA}.Debug|x64.Build.0 = Debug|x64
+		{BB10B107-45B6-4310-8B15-3CAE08DBB6BA}.Debug|x86.ActiveCfg = Debug|Win32
+		{BB10B107-45B6-4310-8B15-3CAE08DBB6BA}.Debug|x86.Build.0 = Debug|Win32
+		{BB10B107-45B6-4310-8B15-3CAE08DBB6BA}.Release|x64.ActiveCfg = Release|x64
+		{BB10B107-45B6-4310-8B15-3CAE08DBB6BA}.Release|x64.Build.0 = Release|x64
+		{BB10B107-45B6-4310-8B15-3CAE08DBB6BA}.Release|x86.ActiveCfg = Release|Win32
+		{BB10B107-45B6-4310-8B15-3CAE08DBB6BA}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

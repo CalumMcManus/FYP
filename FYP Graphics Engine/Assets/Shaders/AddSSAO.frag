@@ -53,7 +53,7 @@ float CalcShadowFactor(vec3 pos, vec3 norm)
 {
 	vec4 coords = ShadowBias * inverse(View) * vec4(pos, 1);
 	coords /= coords.w;
-	vec2 UVcoords;
+	vec2 UVcoords = coords.xy;
 	UVcoords.x = 0.5 * coords.x + 0.5;
     UVcoords.y = 0.5 * coords.y + 0.5;
     float z = 0.5 * coords.z + 0.5;    
