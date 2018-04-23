@@ -273,7 +273,7 @@ namespace Engine { namespace graphics {
 		int m_iCells;
 		//Directional Light
 		float m_fDirectionalIntencity;
-		glm::vec3 m_DirectionalDir = glm::vec3(0, -1, 0);
+		glm::vec3 m_DirectionalDir = glm::vec3(0.001f, -1, 0);
 		glm::vec3 m_DirectionalColour = glm::vec3(1, 1, 1);
 		float m_DirectionalX;
 		float m_DirectionalY;
