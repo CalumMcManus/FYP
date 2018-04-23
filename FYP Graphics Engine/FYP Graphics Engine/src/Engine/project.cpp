@@ -58,7 +58,7 @@ void Engine::Project::AddModel()
 	std::string fileName = FileUtils::splitpath(modelPath, delims).back();
 	std::string newPath = m_Directory + "Assets/Models/" + fileName;
 	std::cout << newPath << std::endl;
-	glfwRestoreWindow(m_EnginePointer->m_Window->getGLFWWindow());
+	//glfwRestoreWindow(m_EnginePointer->m_Window->getGLFWWindow());
 	if (FileUtils::Exists(newPath))
 	{
 		tempObj->addComponent(new ModelRenderer(newPath.c_str()));
@@ -118,7 +118,7 @@ bool Engine::Project::Init()
 			return false;
 	}
 
-	windowGUI = gui->addWindow(Eigen::Vector2i(10, 10), "Utility");
+	windowGUI = gui->addWindow(Eigen::Vector2i(m_EnginePointer->m_Window->getWidth() - 150, 400), "Utility");
 
 	gui->addButton("Add Model", [&]()
 	{
@@ -138,7 +138,7 @@ bool Engine::Project::Init()
 
 	m_EnginePointer->m_Window->setVisible(true);
 	m_EnginePointer->m_Window->performLayout();
-	windowGUI->center();
+	//windowGUI->center();
 	return true;
 }
 

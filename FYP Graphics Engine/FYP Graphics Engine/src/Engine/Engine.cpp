@@ -3,7 +3,7 @@
 
 Engine::GLFWEngine::GLFWEngine(const char* projectName, bool isNew)
 {
-	m_Window = new graphics::Window(projectName, 0, 0);
+	m_Window = new graphics::Window(projectName, 1600, 900);
 	m_Project = new Project(this);
 
 	if (isNew)
@@ -25,6 +25,8 @@ void Engine::GLFWEngine::Run()
 		m_Project->Update();
 		if(!glfwGetKey(m_Window->getGLFWWindow(), GLFW_KEY_LEFT_SHIFT))
 			m_Window->drawWidgets();
+		if (glfwGetKey(m_Window->getGLFWWindow(), GLFW_KEY_ESCAPE))
+			break;
 		m_Window->Update();
 	}
 }

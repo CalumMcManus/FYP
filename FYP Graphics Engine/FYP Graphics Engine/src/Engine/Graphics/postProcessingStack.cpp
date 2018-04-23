@@ -662,7 +662,7 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 {
 	//Lighting
 	m_SceneLighting = new nanogui::Window(m_EnginePointer->m_Window, "Scene Lighting");
-	m_SceneLighting->setPosition(Eigen::Vector2i(15, 15));
+	m_SceneLighting->setPosition(Eigen::Vector2i(0, 0));
 	m_SceneLighting->setLayout(new nanogui::GroupLayout());
 
 	m_SceneLighting->add<nanogui::Label>("Ambient Colour", "sans-bold", 15);
@@ -809,7 +809,7 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 	//Post Pro
 
 	m_PostProWindow = new nanogui::Window(m_EnginePointer->m_Window, "Post Processing");
-	m_PostProWindow->setPosition(Eigen::Vector2i(m_EnginePointer->m_Window->getWidth()- 200, 15));
+	m_PostProWindow->setPosition(Eigen::Vector2i(m_EnginePointer->m_Window->getWidth()- 500, 15));
 	m_PostProWindow->setLayout(new nanogui::GroupLayout());
 
 	//Bloom Intensity
@@ -919,4 +919,6 @@ void Engine::graphics::PostProcessingStack::SetUpUI()
 		[&](bool state) { m_Outline = !m_Outline; }
 	);
 	cbOutline->setChecked(m_Outline);
+
+	m_PostProWindow->setPosition(Eigen::Vector2i(m_EnginePointer->m_Window->getWidth() - 275, 0));
 }

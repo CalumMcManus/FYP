@@ -144,6 +144,7 @@ Engine::UI::MaterialWindow::MaterialWindow(Engine::GLFWEngine * enginePointer)
 		}
 	});
 	materialSpec->setVisible(false);
+	m_MaterialWindow->setPosition(Eigen::Vector2i(0, 485));
 }
 
 void Engine::UI::MaterialWindow::SelectMaterial(Components::Material * selectedMaterial)
@@ -182,7 +183,7 @@ std::string Engine::UI::MaterialWindow::GetTexture(std::string title)
 	std::string fileName = FileUtils::splitpath(texturePath, delims).back();
 	std::string newPath = m_EnginePointer->GetProject()->GetProjectDirectory() +"Assets/Textures/" + fileName;
 	std::cout << newPath << std::endl;
-	glfwRestoreWindow(m_EnginePointer->m_Window->getGLFWWindow());
+	//glfwRestoreWindow(m_EnginePointer->m_Window->getGLFWWindow());
 	if (FileUtils::Exists(newPath))
 	{
 		return newPath;

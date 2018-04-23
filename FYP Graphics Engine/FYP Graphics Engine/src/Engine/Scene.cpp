@@ -21,7 +21,6 @@ Engine::Scene::Scene(GLFWEngine* enginePointer, bool load)
 	
 	m_LightObject = new GameObject();
 	m_LightObject->addComponent(new ModelRenderer("../Assets/Models/Light.obj"));
-	glfwMaximizeWindow(m_EnginePointer->m_Window->getGLFWWindow());
 }
 
 Engine::Scene::~Scene()
@@ -350,7 +349,7 @@ void Engine::Scene::Load(std::string loadPath)
 	{
 		std::cout << "Scene: Load: Failed to open file" << std::endl;
 	}
-	glfwRestoreWindow(m_EnginePointer->m_Window->getGLFWWindow());
+	//glfwRestoreWindow(m_EnginePointer->m_Window->getGLFWWindow());
 
 }
 

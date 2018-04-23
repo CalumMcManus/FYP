@@ -112,12 +112,13 @@ namespace Engine { namespace graphics {
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 		glfwWindowHint(GLFW_SAMPLES, 4);
+		glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 		//glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
 		
 		const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-		m_Width = mode-> width;
-		m_Height = mode->height;
-		m_Window = glfwCreateWindow(m_Width, m_Height, m_Title, glfwGetPrimaryMonitor(), nullptr);
+		/*m_Width = mode-> width;
+		m_Height = mode->height;*/
+		m_Window = glfwCreateWindow(m_Width, m_Height, m_Title, nullptr, nullptr);
 		if (!m_Window)
 		{
 			glfwTerminate();
@@ -154,6 +155,10 @@ namespace Engine { namespace graphics {
 
 		std::cout << "Calum McManus's FYP Graphics Engine" << std::endl;
 		std::cout << "Running OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
+		std::cout << "Move the Camera with the arrow keys, left control and left shift" << std::endl;
+		std::cout << "Hide the UI by holding TAB" << std::endl;
+		std::cout << "Display light objects by holding left shift" << std::endl;
+		std::cout << "Close the application by pressing Escape" << std::endl;
 		return true;
 	}
 

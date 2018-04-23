@@ -4,7 +4,7 @@ Engine::UI::TransformWindow::TransformWindow(Engine::GLFWEngine* enginePointer)
 {
 	//Transform Window
 	m_TransformWindow = new nanogui::Window(enginePointer->m_Window, "Transform");
-	m_TransformWindow->setPosition(Eigen::Vector2i(15, 55));
+	m_TransformWindow->setPosition(Eigen::Vector2i(enginePointer->m_Window->getWidth() - 240, 650));
 	m_TransformWindow->setLayout(new nanogui::GroupLayout());
 
 	//Position
